@@ -175,12 +175,38 @@ export const SCENARIOS: Record<string, Scenario> = {
   },
 };
 
-/** Normalizza il parametro (case-insensitive, spazi → trattini) e risolve lo scenario. */
+// Mappa id univoco partecipante → chiave scenario. Generata dall'Excel delle
+// correlazioni con `npm run build-id-map` (vedi scripts/build-id-map.ts).
+import idMap from "./id-map.json";
+
+const ID_MAP: Record<string, string> = idMap;
+
+/**
+ * Risolve il parametro del link nello scenario corretto.
+ *
+ * Il parametro è l'**id univoco** del partecipante (es. il GUID Cvent): viene
+ * cercato nella mappa id → scenario. In sviluppo accettiamo anche il nome diretto
+ * dello scenario (es. ?param=torinos) per comodità di test.
+ */
 export function resolveScenario(param: string | null | undefined): Scenario | null {
   if (!param) return null;
-  const key = param.trim().toLowerCase().replace(/\s+/g, "-");
-  return SCENARIOS[key] ?? null;
+  const raw = param.trim().toLowerCase();
+
+  // 1) id univoco del partecipante → scenario
+  const mapped = ID_MAP[raw];
+  if (mapped && SCENARIOS[mapped]) return SCENARIOS[mapped]!;
+
+  // 2) solo in sviluppo: nome scenario diretto (?param=torinos)
+  if (process.env.NODE_ENV !== "production") {
+    const key = raw.replace(/\s+/g, "-");
+    if (SCENARIOS[key]) return SCENARIOS[key]!;
+  }
+
+  return null;
 }
 
-/** Elenco dei parametri validi (per la pagina indice di test). */
+/** Elenco delle chiavi scenario (per la pagina indice di test in sviluppo). */
 export const SCENARIO_KEYS = Object.keys(SCENARIOS);
+
+/** Elenco degli id validi (per i link di test in sviluppo). */
+export const ID_KEYS = Object.keys(ID_MAP);
