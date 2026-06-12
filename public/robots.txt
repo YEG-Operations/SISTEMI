@@ -1,0 +1,3 @@
+# L'app contiene aree riservate con dati personali: nessuna indicizzazione.
+User-agent: *
+Disallow: /
