@@ -5,15 +5,18 @@
 type HeaderTuple = { key: string; value: string };
 
 /**
- * Content-Security-Policy restrittiva.
+ * Content-Security-Policy.
  * - default-src 'self': tutto dallo stesso origin salvo eccezioni esplicite.
+ * - 'unsafe-inline' su script è necessario perché Next.js inietta script inline
+ *   per il bootstrap dell'hydration di React e i dati RSC; senza, l'hydration
+ *   fallisce e la pagina resta bianca. Accettabile: sito pubblico senza dati sensibili.
  * - 'unsafe-inline' su style è necessario per gli stili inline di Next/Tailwind.
  * - frame-ancestors 'none' impedisce l'embedding (clickjacking).
  */
 const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
   "base-uri 'self'",
-  "script-src 'self'",
+  "script-src 'self' 'unsafe-inline'",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
