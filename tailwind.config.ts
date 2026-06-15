@@ -10,7 +10,7 @@ const config: Config = {
       colors: {
         // Palette brand Sistemi (rosso del logo / banner).
         sistemi: {
-          red: "#E2001A",
+          red: "#C20E1A",
           "red-dark": "#B80016",
           "red-darker": "#8F0011",
           ink: "#1A1A1A",
