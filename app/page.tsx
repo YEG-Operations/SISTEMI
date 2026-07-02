@@ -36,7 +36,7 @@ export default async function HomePage({
       <div className="mx-auto max-w-2xl px-5 py-6">
         <div className="space-y-4">
           <p className="text-center text-sm text-sistemi-ink/70">
-            {scenario.subtitle}
+            Visualizza di seguito il tuo piano viaggi
           </p>
 
           {scenario.notice ? (
