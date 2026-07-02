@@ -36,7 +36,7 @@ function pickColumns(headers: string[]): { idCol: string; scenarioCol: string } 
   const idCol =
     headers.find((h) => /id/i.test(h)) ?? headers[0]!;
   const scenarioCol =
-    headers.find((h) => /viagg|scenario|trasfer|volo/i.test(h)) ??
+    headers.find((h) => /viagg|scenario|trasfer|volo|registrazion/i.test(h)) ??
     headers.find((h) => h !== idCol) ??
     headers[1]!;
   return { idCol, scenarioCol };

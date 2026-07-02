@@ -1,6 +1,13 @@
 {
-  "9c1bd2c9-b306-43a9-b755-28189d5b580a": "torino-ritorno",
-  "6ee432ad-b816-49ec-8b90-889c3497e0c4": "romas",
-  "342ccc77-81cc-4001-a312-f4495d215272": "milanos",
-  "f9453a11-fbb7-4cd9-b3bb-b651185aee80": "torinos"
+  "fc3d8402-81a0-4c8a-9e1b-01f41056ab99": "bari",
+  "9c1bd2c9-b306-43a9-b755-28189d5b580a": "cagliari",
+  "6ee432ad-b816-49ec-8b90-889c3497e0c4": "catania",
+  "b8db3f88-d72e-49c6-9c5a-fa80da6d02fa": "lamezia",
+  "342ccc77-81cc-4001-a312-f4495d215272": "olbia-ritorno",
+  "ebcf49fd-3448-4895-94de-ff541ab56ee9": "napoli",
+  "d91e625b-4204-4b87-82c4-8b45fc9c85e5": "roma-ritorno",
+  "8f16a645-a6c0-4853-bae5-ccdb01ea3e22": "roma-andata",
+  "f9453a11-fbb7-4cd9-b3bb-b651185aee80": "torino-ritorno-21:10",
+  "a253f8d9-cfdc-4225-b379-894494563b10": "palermo",
+  "dda22471-5065-4545-8d4f-7ff9336756e5": "torino-19sep"
 }
