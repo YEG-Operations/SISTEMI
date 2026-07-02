@@ -1,14 +1,21 @@
 import type { FlightLeg } from "@/lib/scenarios";
 
+/** Etichetta della fascia superiore per ciascuna fase del viaggio. */
+const PHASE_LABELS: Record<FlightLeg["phase"], string> = {
+  "Avvicinamento andata": "🛫 Avvicinamento andata",
+  Andata: "🛫 Andata",
+  Ritorno: "🛬 Ritorno",
+  "Avvicinamento ritorno": "🛬 Avvicinamento ritorno",
+};
+
 /** Card volo in stile "carta d'imbarco" brandizzata Sistemi. */
 export function FlightCard({ leg }: { leg: FlightLeg }) {
-  const isReturn = leg.phase === "Ritorno";
   return (
     <section className="overflow-hidden rounded-2xl bg-white shadow-card">
       {/* Fascia superiore con fase e data */}
       <div className="flex items-center justify-between bg-sistemi-red px-5 py-3 text-white">
         <span className="text-sm font-bold uppercase tracking-wide">
-          {isReturn ? "🛬 Ritorno" : "🛫 Andata"}
+          {PHASE_LABELS[leg.phase]}
         </span>
         <span className="text-xs font-medium text-white/85">{leg.date}</span>
       </div>
