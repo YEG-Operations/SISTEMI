@@ -23,7 +23,6 @@ Roma Fiumicino o Milano Linate, mostrati come card aggiuntive.
 | `torino-18sep` | Torino — andata ven 18 set, ritorno mer 23 in serata (AF 1502) |
 | `torino-19sep` | Torino — andata sab 19 set, ritorno mer 23 |
 | `torino-19-24sep` | Torino — andata sab 19 set, ritorno gio 24 |
-| `torino-ritorno-21:10` | Torino — andata + ritorno, rientro serale (AF 1502, 21:10) |
 | `cagliari` | Cagliari — A/R via Milano Linate (4 voli) |
 | `palermo` | Palermo — A/R via Roma Fiumicino (4 voli) |
 | `catania` | Catania — A/R via Roma Fiumicino (4 voli) |
@@ -32,6 +31,7 @@ Roma Fiumicino o Milano Linate, mostrati come card aggiuntive.
 | `lamezia` | Lamezia Terme — A/R via Roma Fiumicino (4 voli) |
 | `napoli` | Napoli — A/R via Roma Fiumicino (4 voli) |
 | `torino-ritorno` | Torino — solo ritorno |
+| `torino-ritorno-21:10` | Torino — solo ritorno serale (AF 1502, 21:10) |
 | `milano-ritorno` | Milano — solo ritorno |
 | `roma-ritorno` | Roma — solo ritorno |
 | `olbia-ritorno` | Olbia — solo ritorno, via Milano Linate (2 voli) |

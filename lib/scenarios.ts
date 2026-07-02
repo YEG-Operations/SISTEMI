@@ -205,12 +205,6 @@ export const SCENARIOS: Record<string, Scenario> = {
     subtitle: "Andata sabato 19 settembre, ritorno giovedì 24",
     legs: [TORINO.andata(SAB_19), TORINO.ritorno(GIO_24)],
   },
-  "torino-ritorno-21:10": {
-    title: "Il tuo viaggio · Torino",
-    subtitle: "Volo di andata e ritorno da/per Torino, rientro in serata",
-    legs: [TORINO.andata(DOM_20), TORINO.ritornoSera(MER_23)],
-  },
-
   // --- Andata + Ritorno con voli di avvicinamento via Milano ---
   cagliari: viaHub(
     "Cagliari",
@@ -381,6 +375,11 @@ export const SCENARIOS: Record<string, Scenario> = {
     title: "Il tuo rientro · Torino",
     subtitle: "Volo di ritorno da Parigi a Torino",
     legs: [TORINO.ritorno(MER_23)],
+  },
+  "torino-ritorno-21:10": {
+    title: "Il tuo rientro · Torino",
+    subtitle: "Volo di ritorno da Parigi a Torino in serata",
+    legs: [TORINO.ritornoSera(MER_23)],
   },
   "milano-ritorno": {
     title: "Il tuo rientro · Milano",
