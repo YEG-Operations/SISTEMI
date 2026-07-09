@@ -24,6 +24,18 @@ const ALIASES: Record<string, string> = {
   "mezzi-propri": "mezzi-propri",
 };
 
+/**
+ * Correzioni manuali id → scenario, applicate DOPO la lettura dell'Excel.
+ * Servono quando lo scenario di un partecipante va cambiato ma il file sorgente
+ * non è (ancora) aggiornato: così la modifica sopravvive a una rigenerazione.
+ * Chiavi in minuscolo. Lo scenario deve esistere in SCENARIOS.
+ */
+const OVERRIDES: Record<string, string> = {
+  // Spostati da romas a catania (richiesta manuale).
+  "4db002a3-9001-4dda-9e01-8d6382c7a993": "catania",
+  "658b22cd-d955-477b-8b7e-04bf79831523": "catania",
+};
+
 /** Porta un valore "Viaggio" dell'Excel alla chiave scenario corretta. */
 function normalizeScenario(raw: string): string | null {
   const key = raw.trim().toLowerCase().replace(/\s+/g, "-");
@@ -83,6 +95,17 @@ function main() {
     console.error("\nProblemi rilevati:");
     errors.forEach((e) => console.error("  - " + e));
     if (count === 0) process.exit(1);
+  }
+
+  // Applica le correzioni manuali (vedi OVERRIDES).
+  for (const [id, scenario] of Object.entries(OVERRIDES)) {
+    if (!SCENARIOS[scenario]) {
+      console.error(`OVERRIDE: scenario inesistente "${scenario}" per ${id}.`);
+      continue;
+    }
+    const from = map[id] ?? "(assente)";
+    map[id] = scenario;
+    console.log(`Override: ${id}  ${from} → ${scenario}`);
   }
 
   writeFileSync(OUT, JSON.stringify(map, null, 2) + "\n", "utf8");
