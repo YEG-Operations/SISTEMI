@@ -379,9 +379,9 @@ export const SCENARIOS: Record<string, Scenario> = {
     legs: [TORINO.ritorno(MER_23)],
   },
   "torino-ritorno-21:10": {
-    title: "Il tuo rientro · Torino",
-    subtitle: "Volo di ritorno da Parigi a Torino in serata",
-    legs: [TORINO.ritornoSera(MER_23)],
+    title: "Il tuo viaggio · Torino",
+    subtitle: "Andata domenica 20 settembre, ritorno mercoledì 23 in serata (AF 1502, 21:10)",
+    legs: [TORINO.andata(DOM_20), TORINO.ritornoSera(MER_23)],
   },
   "milano-ritorno": {
     title: "Il tuo rientro · Milano",
