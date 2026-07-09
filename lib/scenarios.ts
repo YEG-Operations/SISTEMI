@@ -3,13 +3,13 @@
  * Fonte: "SISTEMI_PARIGI 2026_26.06.30.xlsx" (foglio "Master list Parigi").
  *
  * La persona apre un link con ?Param=<scenario> e vede la soluzione corrispondente.
- * Alcuni scenari includono anche voli di avvicinamento (es. Palermo → Roma prima
- * dell'andata Roma → Parigi, e Roma → Palermo dopo il ritorno).
+ * Alcuni scenari includono più tratte (es. Palermo → Roma → Parigi all'andata e
+ * il percorso inverso al ritorno), tutte etichettate come Andata / Ritorno.
  */
 
 export type FlightLeg = {
-  /** Fase del viaggio: i voli di avvicinamento precedono l'andata / seguono il ritorno. */
-  phase: "Avvicinamento andata" | "Andata" | "Ritorno" | "Avvicinamento ritorno";
+  /** Fase del viaggio. */
+  phase: "Andata" | "Ritorno";
   /** Data leggibile, es. "Domenica 20 settembre 2026". */
   date: string;
   /** Operativo volo, es. "AF 1103 Torino → Paris Charles de Gaulle". */
@@ -147,24 +147,25 @@ export type Scenario = {
 };
 
 /**
- * Scenario con voli di avvicinamento via un hub (Roma o Milano): fino a 4 tratte
- * in ordine cronologico (avvicinamento, andata, ritorno, avvicinamento ritorno).
+ * Scenario con volo dalla città locale a un hub (Roma o Milano) e poi verso Parigi:
+ * fino a 4 tratte in ordine cronologico (andata locale→hub, andata hub→Parigi,
+ * ritorno Parigi→hub, ritorno hub→locale). Tutte etichettate Andata/Ritorno.
  */
 function viaHub(
   city: string,
   hubName: string,
   hub: typeof ROMA | typeof MILANO,
-  avvicinamentoAndata: FlightLeg,
-  avvicinamentoRitorno: FlightLeg
+  partenzaLocale: FlightLeg,
+  rientroLocale: FlightLeg
 ): Scenario {
   return {
     title: `Il tuo viaggio · ${city}`,
     subtitle: `Voli di andata e ritorno da/per ${city} via ${hubName}`,
     legs: [
-      avvicinamentoAndata,
+      partenzaLocale,
       hub.andata(DOM_20),
       hub.ritorno(MER_23),
-      avvicinamentoRitorno,
+      rientroLocale,
     ],
   };
 }
@@ -207,13 +208,13 @@ export const SCENARIOS: Record<string, Scenario> = {
     subtitle: "Andata sabato 19 settembre, ritorno giovedì 24",
     legs: [TORINO.andata(SAB_19), TORINO.ritorno(GIO_24)],
   },
-  // --- Andata + Ritorno con voli di avvicinamento via Milano ---
+  // --- Andata + Ritorno via Milano Linate ---
   cagliari: viaHub(
     "Cagliari",
     "Milano Linate",
     MILANO,
     leg(
-      "Avvicinamento andata",
+      "Andata",
       DOM_20,
       "W2 8640 Cagliari → Milano Linate",
       "Cagliari (CAG)",
@@ -222,7 +223,7 @@ export const SCENARIOS: Record<string, Scenario> = {
       "09:20"
     ),
     leg(
-      "Avvicinamento ritorno",
+      "Ritorno",
       MER_23,
       "W2 8645 Milano Linate → Cagliari",
       "Milano Linate (LIN)",
@@ -232,13 +233,13 @@ export const SCENARIOS: Record<string, Scenario> = {
     )
   ),
 
-  // --- Andata + Ritorno con voli di avvicinamento via Roma ---
+  // --- Andata + Ritorno via Roma Fiumicino ---
   palermo: viaHub(
     "Palermo",
     "Roma Fiumicino",
     ROMA,
     leg(
-      "Avvicinamento andata",
+      "Andata",
       DOM_20,
       "AZ 1770 Palermo → Roma Fiumicino",
       "Palermo (PMO)",
@@ -247,7 +248,7 @@ export const SCENARIOS: Record<string, Scenario> = {
       "09:10"
     ),
     leg(
-      "Avvicinamento ritorno",
+      "Ritorno",
       MER_23,
       "AZ 1789 Roma Fiumicino → Palermo",
       "Roma Fiumicino (FCO)",
@@ -261,7 +262,7 @@ export const SCENARIOS: Record<string, Scenario> = {
     "Roma Fiumicino",
     ROMA,
     leg(
-      "Avvicinamento andata",
+      "Andata",
       DOM_20,
       "AZ 1728 Catania → Roma Fiumicino",
       "Catania (CTA)",
@@ -270,7 +271,7 @@ export const SCENARIOS: Record<string, Scenario> = {
       "09:30"
     ),
     leg(
-      "Avvicinamento ritorno",
+      "Ritorno",
       MER_23,
       "AZ 1719 Roma Fiumicino → Catania",
       "Roma Fiumicino (FCO)",
@@ -284,7 +285,7 @@ export const SCENARIOS: Record<string, Scenario> = {
     "Roma Fiumicino",
     ROMA,
     leg(
-      "Avvicinamento andata",
+      "Andata",
       DOM_20,
       "AZ 1602 Bari → Roma Fiumicino",
       "Bari (BRI)",
@@ -293,7 +294,7 @@ export const SCENARIOS: Record<string, Scenario> = {
       "07:40"
     ),
     leg(
-      "Avvicinamento ritorno",
+      "Ritorno",
       MER_23,
       "AZ 1603 Roma Fiumicino → Bari",
       "Roma Fiumicino (FCO)",
@@ -307,7 +308,7 @@ export const SCENARIOS: Record<string, Scenario> = {
     "Roma Fiumicino",
     ROMA,
     leg(
-      "Avvicinamento andata",
+      "Andata",
       DOM_20,
       "AZ 1620 Brindisi → Roma Fiumicino",
       "Brindisi (BDS)",
@@ -316,7 +317,7 @@ export const SCENARIOS: Record<string, Scenario> = {
       "07:35"
     ),
     leg(
-      "Avvicinamento ritorno",
+      "Ritorno",
       MER_23,
       "AZ 1625 Roma Fiumicino → Brindisi",
       "Roma Fiumicino (FCO)",
@@ -330,7 +331,7 @@ export const SCENARIOS: Record<string, Scenario> = {
     "Roma Fiumicino",
     ROMA,
     leg(
-      "Avvicinamento andata",
+      "Andata",
       DOM_20,
       "AZ 1162 Lamezia Terme → Roma Fiumicino",
       "Lamezia Terme (SUF)",
@@ -339,7 +340,7 @@ export const SCENARIOS: Record<string, Scenario> = {
       "07:30"
     ),
     leg(
-      "Avvicinamento ritorno",
+      "Ritorno",
       MER_23,
       "AZ 1173 Roma Fiumicino → Lamezia Terme",
       "Roma Fiumicino (FCO)",
@@ -353,7 +354,7 @@ export const SCENARIOS: Record<string, Scenario> = {
     "Roma Fiumicino",
     ROMA,
     leg(
-      "Avvicinamento andata",
+      "Andata",
       DOM_20,
       "AZ 1268 Napoli → Roma Fiumicino",
       "Napoli (NAP)",
@@ -362,7 +363,7 @@ export const SCENARIOS: Record<string, Scenario> = {
       "07:25"
     ),
     leg(
-      "Avvicinamento ritorno",
+      "Ritorno",
       MER_23,
       "AZ 1267 Roma Fiumicino → Napoli",
       "Roma Fiumicino (FCO)",
@@ -399,7 +400,7 @@ export const SCENARIOS: Record<string, Scenario> = {
     legs: [
       MILANO.ritorno(MER_23),
       leg(
-        "Avvicinamento ritorno",
+        "Ritorno",
         MER_23,
         "W2 8468 Milano Linate → Olbia",
         "Milano Linate (LIN)",
@@ -428,7 +429,7 @@ export const SCENARIOS: Record<string, Scenario> = {
     subtitle: "Raggiungi Parigi in autonomia",
     legs: [],
     notice:
-      "Per questo evento raggiungerai Parigi con mezzi propri. Conserva le ricevute di viaggio: per indicazioni su rimborsi, parcheggi e logistica contatta l'organizzazione dell'evento.",
+      "Abbiamo preso buona nota che raggiungerai Parigi con mezzi propri; per eventuali indicazioni su parcheggi o logistica ti invitiamo a contattare l'organizzazione dell'evento.",
   },
 };
 

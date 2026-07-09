@@ -2,10 +2,8 @@ import type { FlightLeg } from "@/lib/scenarios";
 
 /** Etichetta della fascia superiore per ciascuna fase del viaggio. */
 const PHASE_LABELS: Record<FlightLeg["phase"], string> = {
-  "Avvicinamento andata": "🛫 Avvicinamento andata",
   Andata: "🛫 Andata",
   Ritorno: "🛬 Ritorno",
-  "Avvicinamento ritorno": "🛬 Avvicinamento ritorno",
 };
 
 /** Card volo in stile "carta d'imbarco" brandizzata Sistemi. */
