@@ -22,13 +22,15 @@ export type FlightLeg = {
   departure: string;
   /** Orario di arrivo "HH:MM". */
   arrival: string;
-  /** Franchigia bagagli. */
-  baggage: string;
+  /** Franchigia bagagli (una voce per riga). */
+  baggage: string[];
 };
 
-/** Franchigia bagagli: identica per tutte le tratte nel file. */
-const BAGGAGE =
-  "1 bagaglio a mano da 8 kg (55 × 35 × 25 cm) in cappelliera + 1 accessorio a scelta tra zainetto, borsetta o PC portatile sotto il sedile.";
+/** Franchigia bagagli: identica per tutte le tratte con volo. */
+const BAGGAGE = [
+  "1 bagaglio da stiva 23 kg",
+  "1 bagaglio a mano (massimo 8 kg, dimensioni 55 × 35 × 25 cm) più un accessorio personale (es. borsa a mano) da riporre sotto il sedile",
+];
 
 const VEN_18 = "Venerdì 18 settembre 2026";
 const SAB_19 = "Sabato 19 settembre 2026";
