@@ -55,7 +55,21 @@ export function FlightCard({ leg }: { leg: FlightLeg }) {
         {/* Dettagli volo */}
         <div className="mt-5 space-y-2 border-t border-dashed border-sistemi-ink/15 pt-4">
           <Row label="Volo" value={leg.flight} />
-          <Row label="Bagaglio" value={leg.baggage} />
+          <div className="flex flex-col gap-0.5 sm:flex-row sm:gap-3">
+            <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-sistemi-ink/50 sm:w-20 sm:pt-0.5">
+              Bagaglio
+            </span>
+            <ul className="space-y-1 text-sm leading-relaxed text-sistemi-ink">
+              {leg.baggage.map((item, i) => (
+                <li key={i} className="flex gap-1.5">
+                  <span aria-hidden className="text-sistemi-red">
+                    •
+                  </span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
     </section>
