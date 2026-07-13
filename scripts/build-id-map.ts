@@ -34,6 +34,10 @@ const OVERRIDES: Record<string, string> = {
   // Spostati da romas a catania (richiesta manuale).
   "4db002a3-9001-4dda-9e01-8d6382c7a993": "catania",
   "658b22cd-d955-477b-8b7e-04bf79831523": "catania",
+  // torino-17-24sep — id forniti manualmente (non presenti nel file Cvent).
+  // Elena Baudino, Silvia Bagnasacco.
+  "9c1bd2c9-b306-43a9-b755-28189d5b580a": "torino-17-24sep",
+  "3d8fcae5-02ea-4b9a-a2dc-65696b78b73e": "torino-17-24sep",
 };
 
 /** Porta un valore "Viaggio" dell'Excel alla chiave scenario corretta. */

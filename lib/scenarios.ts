@@ -32,6 +32,7 @@ const BAGGAGE = [
   "1 bagaglio a mano (massimo 8 kg, dimensioni 55 × 35 × 25 cm) più un accessorio personale (es. borsa a mano) da riporre sotto il sedile",
 ];
 
+const GIO_17 = "Giovedì 17 settembre 2026";
 const VEN_18 = "Venerdì 18 settembre 2026";
 const SAB_19 = "Sabato 19 settembre 2026";
 const DOM_20 = "Domenica 20 settembre 2026";
@@ -207,6 +208,30 @@ export const SCENARIOS: Record<string, Scenario> = {
     title: "Il tuo viaggio · Torino",
     subtitle: "Andata sabato 19 settembre, ritorno giovedì 24",
     legs: [TORINO.andata(SAB_19), TORINO.ritorno(GIO_24)],
+  },
+  "torino-17-24sep": {
+    title: "Il tuo viaggio · Torino",
+    subtitle: "Andata giovedì 17 settembre, ritorno giovedì 24",
+    legs: [
+      leg(
+        "Andata",
+        GIO_17,
+        "AF 1503 Torino → Paris Charles de Gaulle",
+        "Torino (TRN)",
+        "Paris Charles de Gaulle (CDG)",
+        "06:00",
+        "07:35"
+      ),
+      leg(
+        "Ritorno",
+        GIO_24,
+        "AF 1102 Paris Charles de Gaulle → Torino",
+        "Paris Charles de Gaulle (CDG)",
+        "Torino (TRN)",
+        "08:15",
+        "09:40"
+      ),
+    ],
   },
   // --- Andata + Ritorno via Milano Linate ---
   cagliari: viaHub(
