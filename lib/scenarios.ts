@@ -454,7 +454,7 @@ export const SCENARIOS: Record<string, Scenario> = {
     subtitle: "Raggiungi Parigi in autonomia",
     legs: [],
     notice:
-      "Abbiamo preso buona nota che raggiungerai Parigi con mezzi propri; per eventuali indicazioni su parcheggi o logistica ti invitiamo a contattare l'organizzazione dell'evento.",
+      "Abbiamo preso buona nota che raggiungerai Parigi con mezzi propri; indicazioni circa il parcheggio e la logistica ti verranno fornite più avanti.",
   },
 };
 
