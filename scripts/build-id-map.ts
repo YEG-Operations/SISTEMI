@@ -38,6 +38,10 @@ const OVERRIDES: Record<string, string> = {
   // Elena Baudino, Silvia Bagnasacco.
   "9c1bd2c9-b306-43a9-b755-28189d5b580a": "torino-17-24sep",
   "3d8fcae5-02ea-4b9a-a2dc-65696b78b73e": "torino-17-24sep",
+  // torino-19-24sep — id forniti manualmente (non presenti nel file Cvent).
+  // Flavia Giuliana Brero, Lidia Brero.
+  "4eb0afca-7a03-436b-8bf2-94aece1d04a5": "torino-19-24sep",
+  "6370c061-75e1-499e-b669-448b88947e5a": "torino-19-24sep",
 };
 
 /** Porta un valore "Viaggio" dell'Excel alla chiave scenario corretta. */
