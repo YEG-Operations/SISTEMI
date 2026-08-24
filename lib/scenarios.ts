@@ -289,11 +289,11 @@ export const SCENARIOS: Record<string, Scenario> = {
     leg(
       "Andata",
       DOM_20,
-      "AZ 1728 Catania → Roma Fiumicino",
+      "AZ 1736 Catania → Roma Fiumicino",
       "Catania (CTA)",
       "Roma Fiumicino (FCO)",
-      "08:05",
-      "09:30"
+      "07:05",
+      "08:30"
     ),
     leg(
       "Ritorno",
