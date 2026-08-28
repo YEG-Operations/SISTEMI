@@ -35,13 +35,8 @@ export async function ActivityPage({
             Visualizza di seguito le tue attività
           </p>
 
-          <ActivityCard dateLabel={DATE_LABEL["21"]} result={activities["21"]} />
-          <ActivityCard dateLabel={DATE_LABEL["23"]} result={activities["23"]} />
-
-          <p className="pt-2 text-center text-xs text-sistemi-ink/50">
-            Per assistenza o modifiche contatta l&apos;organizzazione
-            dell&apos;evento.
-          </p>
+          <ActivityCard dateLabel={DATE_LABEL["21"]} icon="📍" result={activities["21"]} />
+          <ActivityCard dateLabel={DATE_LABEL["23"]} icon="🏛️" result={activities["23"]} />
         </div>
       </div>
     </main>
