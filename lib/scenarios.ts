@@ -197,7 +197,19 @@ export const SCENARIOS: Record<string, Scenario> = {
   "torino-18sep": {
     title: "Il tuo viaggio · Torino",
     subtitle: "Andata venerdì 18 settembre, ritorno mercoledì 23 in serata",
-    legs: [TORINO.andata(VEN_18), TORINO.ritornoSera(MER_23)],
+    legs: [
+      // Il 18 settembre AF 1103 opera 10:50–12:20, non 10:20–11:50 come sulle altre date.
+      leg(
+        "Andata",
+        VEN_18,
+        "AF 1103 Torino → Paris Charles de Gaulle",
+        "Torino (TRN)",
+        "Paris Charles de Gaulle (CDG)",
+        "10:50",
+        "12:20"
+      ),
+      TORINO.ritornoSera(MER_23),
+    ],
   },
   "torino-19sep": {
     title: "Il tuo viaggio · Torino",

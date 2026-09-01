@@ -42,6 +42,8 @@ const OVERRIDES: Record<string, string> = {
   // Flavia Giuliana Brero, Lidia Brero.
   "4eb0afca-7a03-436b-8bf2-94aece1d04a5": "torino-19-24sep",
   "6370c061-75e1-499e-b669-448b88947e5a": "torino-19-24sep",
+  // Filippo Ravenni: nessun rientro su Roma, resta la sola andata.
+  "f3b67120-fd14-4810-b292-f9d1019f65cf": "roma-andata",
 };
 
 /** Porta un valore "Viaggio" dell'Excel alla chiave scenario corretta. */
