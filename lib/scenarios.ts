@@ -98,7 +98,7 @@ const MILANO = {
       "AZ 312 Milano Linate → Paris Charles de Gaulle",
       "Milano Linate (LIN)",
       "Paris Charles de Gaulle (CDG)",
-      "14:30",
+      "14:25",
       "16:00"
     ),
   ritorno: (date: string) =>
@@ -290,7 +290,7 @@ export const SCENARIOS: Record<string, Scenario> = {
       "AZ 1789 Roma Fiumicino → Palermo",
       "Roma Fiumicino (FCO)",
       "Palermo (PMO)",
-      "21:20",
+      "21:25",
       "22:30"
     )
   ),
@@ -336,7 +336,7 @@ export const SCENARIOS: Record<string, Scenario> = {
       "AZ 1603 Roma Fiumicino → Bari",
       "Roma Fiumicino (FCO)",
       "Bari (BRI)",
-      "21:50",
+      "21:45",
       "22:55"
     )
   ),
