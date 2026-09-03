@@ -2,11 +2,7 @@ import { redirect } from "next/navigation";
 import { BrandHeader } from "@/components/BrandHeader";
 import { ConvocazioneCard } from "@/components/ConvocazioneCard";
 import { ConvocazioneActions } from "@/components/ConvocazioneActions";
-import {
-  resolveConvocazione,
-  convocazioneToText,
-  CONVOCAZIONE_ID_KEYS,
-} from "@/lib/convocazioni";
+import { resolveConvocazione, CONVOCAZIONE_ID_KEYS } from "@/lib/convocazioni";
 
 /**
  * Pagina convocazione: legge il parametro (?param=<id-univoco>) e mostra la
@@ -47,8 +43,8 @@ export async function ConvocazionePage({
             <>
               <ConvocazioneCard conv={convocazione} />
               <ConvocazioneActions
-                text={convocazioneToText(convocazione)}
-                filename="Convocazione-Sistemi50-Parigi.txt"
+                conv={convocazione}
+                filename="Convocazione-Sistemi50-Parigi.pdf"
                 backHref={backHref}
               />
             </>

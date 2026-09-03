@@ -18,6 +18,9 @@ export function ConvocazioneCard({ conv }: { conv: Convocazione }) {
 
         {conv.flights ? (
           <Block label={conv.flightsLabel ?? "Volo"}>
+            <p className="mb-2 text-sm font-bold text-sistemi-red">
+              {conv.dateLabel}
+            </p>
             <ul className="space-y-1.5">
               {conv.flights.map((f, i) => (
                 <li
@@ -34,7 +37,15 @@ export function ConvocazioneCard({ conv }: { conv: Convocazione }) {
           </Block>
         ) : null}
 
-        {conv.call ? <Block label="Convocazione">{listOf(conv.call)}</Block> : null}
+        {conv.call ? (
+          <Block label="Convocazione">
+            <div className="space-y-1.5 text-sm leading-relaxed text-sistemi-ink">
+              {conv.call.map((l, i) => (
+                <p key={i}>{withBoldTimes(l)}</p>
+              ))}
+            </div>
+          </Block>
+        ) : null}
 
         {conv.baggage ? (
           <Block label={conv.baggageLabel ?? "Franchigia bagaglio"}>
@@ -74,7 +85,7 @@ export function ConvocazioneCard({ conv }: { conv: Convocazione }) {
         ) : null}
 
         {conv.notes && conv.notes.length ? (
-          <p className="border-t border-dashed border-sistemi-ink/15 pt-4 text-xs leading-relaxed text-sistemi-ink/60">
+          <p className="border-t border-dashed border-sistemi-ink/15 pt-4 text-sm font-bold leading-relaxed text-sistemi-ink">
             {conv.notes.join(" ")}
           </p>
         ) : null}
@@ -101,5 +112,19 @@ function listOf(lines: string[]) {
         <p key={i}>{l}</p>
       ))}
     </div>
+  );
+}
+
+/** Rende in grassetto gli orari (formato HH:MM) all'interno di un testo. */
+function withBoldTimes(text: string) {
+  const parts = text.split(/(\d{1,2}[:.]\d{2})/g);
+  return parts.map((p, i) =>
+    /^\d{1,2}[:.]\d{2}$/.test(p) ? (
+      <strong key={i} className="font-bold">
+        {p}
+      </strong>
+    ) : (
+      <span key={i}>{p}</span>
+    )
   );
 }

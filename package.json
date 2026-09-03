@@ -12,6 +12,7 @@
     "build-activity-map": "tsx scripts/build-activity-map.ts"
   },
   "dependencies": {
+    "jspdf": "^2.5.2",
     "next": "^15.5.19",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
