@@ -3,7 +3,7 @@
  *
  * Ogni partecipante apre /convocazione?param=<id-univoco> e vede la propria
  * convocazione, declinata:
- *   1) per persona, quando esiste un testo dedicato (es. Cristina Ferrari);
+ *   1) per persona, quando esiste un testo dedicato (override per singolo id);
  *   2) altrimenti per tipologia di viaggio (chiave scenario), come per il
  *      piano viaggi in lib/scenarios.ts.
  *
@@ -254,8 +254,9 @@ export const CONVOCAZIONI: Record<string, Convocazione> = {
 // per tipologia quando presente.
 
 export const PERSON_CONVOCAZIONI: Record<string, Convocazione> = {
-  // Cristina Ferrari (scenario torino-ritorno): arriva a Parigi in autonomia,
-  // ha il volo di rientro. Testo dedicato dal Word "…TRN Ferrari Cristina".
+  // Partecipante con convocazione dedicata (scenario torino-ritorno): arriva a
+  // Parigi in autonomia, ha il volo di rientro. Testo dedicato dal Word di
+  // riferimento. L'associazione id -> nominativo è nel file locale (non versionato).
   "149556d2-c809-4470-b39e-e396c5178bd3": {
     dateLabel: DOM_20,
     hotel: HOTEL,

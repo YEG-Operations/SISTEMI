@@ -41,3 +41,6 @@ yarn-error.log*
 
 # output di verifica (contiene email partecipanti)
 out-verifica-*.csv
+
+# anagrafica partecipanti (PII: nome/cognome/email) — solo locale, mai su GitHub
+/lib/contacts.json
