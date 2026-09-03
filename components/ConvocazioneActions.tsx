@@ -114,6 +114,23 @@ export function ConvocazioneActions({
     doc.setFontSize(20);
     doc.text("LA TUA CONVOCAZIONE", marginX, 68);
 
+    // Logo Sistemi nella fascia (angolo destro). Se non è raggiungibile, il
+    // PDF viene comunque generato senza logo.
+    try {
+      const res = await fetch("/brand/logo.png");
+      const blob = await res.blob();
+      const logo: string = await new Promise((resolve, reject) => {
+        const fr = new FileReader();
+        fr.onload = () => resolve(fr.result as string);
+        fr.onerror = reject;
+        fr.readAsDataURL(blob);
+      });
+      const size = 56;
+      doc.addImage(logo, "PNG", pageW - marginX - size, (92 - size) / 2, size, size);
+    } catch {
+      /* logo non disponibile: nessun blocco alla generazione del PDF */
+    }
+
     // --- Data (sopra a tutto l'operativo) ---
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
