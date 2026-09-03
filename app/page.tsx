@@ -39,6 +39,21 @@ export default async function HomePage({
             Visualizza di seguito il tuo piano viaggi
           </p>
 
+          {/* Invito alla convocazione, sopra alle schede dei voli. */}
+          <div className="rounded-2xl bg-white p-5 text-center shadow-card">
+            <p className="text-sm leading-relaxed text-sistemi-ink/80">
+              Consulta la tua <span className="font-semibold text-sistemi-ink">convocazione</span>{" "}
+              con l&apos;orario di ritrovo, i documenti e le indicazioni per la partenza.
+            </p>
+            <a
+              href={`/convocazione?param=${encodeURIComponent(value ?? "")}`}
+              className="mt-3 inline-flex items-center justify-center gap-2 rounded-xl bg-sistemi-red px-5 py-3 text-sm font-semibold text-white shadow-card transition hover:bg-sistemi-red-dark"
+            >
+              <span aria-hidden>📄</span>
+              Visualizza la tua convocazione
+            </a>
+          </div>
+
           {scenario.notice ? (
             <div className="rounded-2xl bg-white p-6 text-center shadow-card">
               <div className="mb-3 text-3xl" aria-hidden>
