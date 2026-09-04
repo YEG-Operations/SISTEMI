@@ -21,8 +21,8 @@ import idMap from "./id-map.json";
 
 /** Blocco di una convocazione. Tutti i campi sono opzionali: si mostra solo ciò che serve. */
 export type Convocazione = {
-  /** Data principale mostrata nella fascia della card. */
-  dateLabel: string;
+  /** Data principale mostrata nella fascia della card (assente per chi non ha volo di andata). */
+  dateLabel?: string;
   /** Operativo/i di volo, una riga per tratta. */
   flights?: string[];
   /** Etichetta della sezione voli (default "Volo"). */
@@ -101,7 +101,7 @@ function viaFco(localLeg: string, notes: string[] = [NOTE_FUTURE_SHORT]): Convoc
     call: [
       "Presentati al banco del check-in del volo due ore prima dell'orario di decollo, munito di un documento d'identità in corso di validità e valido per l'espatrio.",
       "Il bagaglio verrà spedito direttamente all'aeroporto di Parigi Charles de Gaulle.",
-      "Una volta arrivato a Roma Fiumicino, recati al meeting point della Libreria Feltrinelli in area transiti, ad inizio corridoio gates voli ITA (Terminal T1), dove troverai un'assistenza dedicata che ti darà indicazioni sul volo per Parigi.",
+      "Una volta arrivato a Roma Fiumicino, recati al meeting point davanti alla Libreria Feltrinelli in area transiti, ad inizio corridoio gates voli ITA (Terminal T1), dove troverai un'assistenza dedicata che ti darà indicazioni sul volo per Parigi.",
     ],
     baggage: BAGGAGE_STD,
     parking: true,
@@ -109,17 +109,16 @@ function viaFco(localLeg: string, notes: string[] = [NOTE_FUTURE_SHORT]): Convoc
   };
 }
 
-/** Convocazione per chi arriva a Parigi in autonomia e ha solo il volo di rientro. */
-function soloRientro(returnFlights: string[], parking = false): Convocazione {
+/**
+ * Convocazione per chi arriva a Parigi in autonomia (nessun volo di andata).
+ * Non mostra il volo di rientro né la relativa data, e non riporta il parcheggio:
+ * queste informazioni restano nel piano viaggi.
+ */
+function soloRientro(): Convocazione {
   return {
-    dateLabel: DOM_20,
     hotel: HOTEL,
-    flightsLabel: "Volo di rientro",
-    flights: returnFlights,
     call: [DOC_REMINDER],
-    baggageLabel: "Franchigia bagaglio del volo di rientro",
     baggage: BAGGAGE_STD,
-    parking,
     notes: [NOTE_FUTURE],
   };
 }
@@ -137,7 +136,7 @@ const TORINO_20: Convocazione = diretto(
 
 const MILANO_20: Convocazione = diretto(
   DOM_20,
-  "AZ 312 Milano Linate → Parigi Charles de Gaulle · 14:30 – 16:00",
+  "AZ 312 Milano Linate → Parigi Charles de Gaulle · 14:25 – 16:00",
   [
     "Presentati alle ore 12:00 direttamente ai banchi del check-in del volo ITA, area 1, primo piano partenze, aeroporto di Milano Linate, con un documento d'identità in corso di validità e valido per l'espatrio.",
     "Al banco del check-in troverai un'assistenza dedicata che ti aiuterà nel disbrigo delle pratiche aeroportuali.",
@@ -167,7 +166,7 @@ export const CONVOCAZIONI: Record<string, Convocazione> = {
   // --- Torino con date alternative ---
   "torino-18sep": diretto(
     VEN_18,
-    "AF 1103 Torino → Parigi Charles de Gaulle · 10:20 – 11:50",
+    "AF 1103 Torino → Parigi Charles de Gaulle · 10:50 – 12:20",
     [
       "Presentati alle ore 08:20 direttamente ai banchi del check-in del volo, primo piano partenze, aeroporto di Torino.",
       DOC_REMINDER,
@@ -197,7 +196,7 @@ export const CONVOCAZIONI: Record<string, Convocazione> = {
     dateLabel: DOM_20,
     flights: [
       "W2 8640 Cagliari → Milano Linate · 08:00 – 09:20",
-      "AZ 312 Milano Linate → Parigi Charles de Gaulle · 14:30 – 16:00",
+      "AZ 312 Milano Linate → Parigi Charles de Gaulle · 14:25 – 16:00",
     ],
     call: [
       "Presentati in aeroporto due ore prima del decollo, al banco del check-in del volo, con un documento d'identità in corso di validità e valido per l'espatrio.",
@@ -219,23 +218,11 @@ export const CONVOCAZIONI: Record<string, Convocazione> = {
   lamezia: viaFco("AZ 1162 Lamezia Terme → Roma Fiumicino · 06:15 – 07:30"),
   napoli: viaFco("AZ 1268 Napoli → Roma Fiumicino · 06:35 – 07:25"),
 
-  // --- Solo rientro (arrivo a Parigi in autonomia) ---
-  "torino-ritorno": soloRientro([
-    "AF 1702 Parigi Charles de Gaulle → Torino · 15:40 – 17:05",
-  ]),
-  "milano-ritorno": soloRientro([
-    "AZ 313 Parigi Charles de Gaulle → Milano Linate · 16:50 – 18:20",
-  ]),
-  "roma-ritorno": soloRientro([
-    "AZ 325 Parigi Charles de Gaulle → Roma Fiumicino · 18:15 – 20:25",
-  ]),
-  "olbia-ritorno": soloRientro(
-    [
-      "AZ 313 Parigi Charles de Gaulle → Milano Linate · 16:50 – 18:20",
-      "W2 8468 Milano Linate → Olbia · 21:00 – 22:10",
-    ],
-    true // il testo di origine include il blocco parcheggio
-  ),
+  // --- Solo rientro (arrivo a Parigi in autonomia, nessun volo di andata) ---
+  "torino-ritorno": soloRientro(),
+  "milano-ritorno": soloRientro(),
+  "roma-ritorno": soloRientro(),
+  "olbia-ritorno": soloRientro(),
 
   // --- Mezzi propri (posto auto riservato all'hotel) ---
   "mezzi-propri": {
@@ -258,10 +245,8 @@ export const PERSON_CONVOCAZIONI: Record<string, Convocazione> = {
   // Parigi in autonomia, ha il volo di rientro. Testo dedicato dal Word di
   // riferimento. L'associazione id -> nominativo è nel file locale (non versionato).
   "149556d2-c809-4470-b39e-e396c5178bd3": {
-    dateLabel: DOM_20,
     hotel: HOTEL,
     call: [DOC_REMINDER],
-    baggageLabel: "Franchigia bagaglio per il volo di rientro",
     baggage: BAGGAGE_STD,
   },
 };
@@ -314,7 +299,7 @@ export function convocazioneToText(conv: Convocazione): string {
   const out: string[] = [];
   out.push("SISTEMI 50 · #Parigi 20-23 settembre 2026");
   out.push("LA TUA CONVOCAZIONE");
-  out.push(conv.dateLabel);
+  if (conv.dateLabel) out.push(conv.dateLabel);
   out.push("");
 
   if (conv.hotel?.length) {

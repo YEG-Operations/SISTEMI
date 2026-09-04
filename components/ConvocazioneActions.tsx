@@ -131,12 +131,14 @@ export function ConvocazioneActions({
       /* logo non disponibile: nessun blocco alla generazione del PDF */
     }
 
-    // --- Data (sopra a tutto l'operativo) ---
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.setTextColor(RED[0], RED[1], RED[2]);
-    doc.text(clean(conv.dateLabel), marginX, y);
-    y += 24;
+    // --- Data (sopra a tutto l'operativo, se presente) ---
+    if (conv.dateLabel) {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.setTextColor(RED[0], RED[1], RED[2]);
+      doc.text(clean(conv.dateLabel), marginX, y);
+      y += 24;
+    }
 
     // --- Ritrovo / hotel ---
     if (conv.hotel?.length) {

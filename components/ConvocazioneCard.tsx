@@ -10,7 +10,11 @@ export function ConvocazioneCard({ conv }: { conv: Convocazione }) {
         <span className="text-sm font-bold uppercase tracking-wide">
           📄 La tua convocazione
         </span>
-        <span className="text-xs font-medium text-white/85">{conv.dateLabel}</span>
+        {conv.dateLabel ? (
+          <span className="text-xs font-medium text-white/85">
+            {conv.dateLabel}
+          </span>
+        ) : null}
       </div>
 
       <div className="space-y-5 px-5 py-5">
@@ -18,9 +22,11 @@ export function ConvocazioneCard({ conv }: { conv: Convocazione }) {
 
         {conv.flights ? (
           <Block label={conv.flightsLabel ?? "Volo"}>
-            <p className="mb-2 text-sm font-bold text-sistemi-red">
-              {conv.dateLabel}
-            </p>
+            {conv.dateLabel ? (
+              <p className="mb-2 text-sm font-bold text-sistemi-red">
+                {conv.dateLabel}
+              </p>
+            ) : null}
             <ul className="space-y-1.5">
               {conv.flights.map((f, i) => (
                 <li
