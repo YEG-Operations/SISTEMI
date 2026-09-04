@@ -66,7 +66,7 @@ const HOTEL = [
 ];
 
 const DOC_REMINDER =
-  "Ti ricordiamo di portare con te un documento d'identità in corso di validità e valido per l'espatrio.";
+  "Ti ricordiamo di voler portare con te un documento di identità in corso di validità e valido per l'espatrio.";
 
 const NOTE_FUTURE =
   "Ulteriori dettagli e i contatti delle assistenti verranno comunicati nei prossimi giorni.";
