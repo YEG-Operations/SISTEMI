@@ -465,7 +465,7 @@ export const SCENARIOS: Record<string, Scenario> = {
     title: "Viaggio con mezzi propri",
     subtitle: "Raggiungi Parigi in autonomia",
     legs: [],
-    notice: "Abbiamo preso buona nota che raggiungerai Parigi.",
+    notice: "Abbiamo preso buona nota che raggiungerai Parigi con mezzi propri.",
   },
 };
 
