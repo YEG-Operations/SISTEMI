@@ -118,6 +118,7 @@ function soloRientro(): Convocazione {
   return {
     hotel: HOTEL,
     call: [DOC_REMINDER],
+    baggageLabel: "Franchigia bagaglio volo di rientro",
     baggage: BAGGAGE_STD,
     notes: [NOTE_FUTURE],
   };
