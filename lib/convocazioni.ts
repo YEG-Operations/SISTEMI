@@ -99,7 +99,7 @@ function viaFco(localLeg: string, notes: string[] = [NOTE_FUTURE_SHORT]): Convoc
     dateLabel: DOM_20,
     flights: [localLeg, "AZ 318 Roma Fiumicino → Parigi Charles de Gaulle · 11:00 – 13:15"],
     call: [
-      "Presentati al banco del check-in del volo due ore prima dell'orario di decollo, munito di un documento d'identità in corso di validità e valido per l'espatrio.",
+      "Presentati al banco del check-in del volo due ore prima dell'orario di decollo, munito di un documento di identità in corso di validità e valido per l'espatrio.",
       "Il bagaglio verrà spedito direttamente all'aeroporto di Parigi Charles de Gaulle.",
       "Una volta arrivato a Roma Fiumicino, recati al meeting point davanti alla Libreria Feltrinelli in area transiti, ad inizio corridoio gates voli ITA (Terminal T1), dove troverai un'assistenza dedicata che ti darà indicazioni sul volo per Parigi.",
     ],
@@ -129,7 +129,7 @@ const TORINO_20: Convocazione = diretto(
   DOM_20,
   "AF 1103 Torino → Parigi Charles de Gaulle · 10:20 – 11:50",
   [
-    "Presentati alle ore 07:50 direttamente ai banchi del check-in del volo, primo piano partenze, aeroporto di Torino, con un documento d'identità in corso di validità e valido per l'espatrio.",
+    "Presentati alle ore 07:50 direttamente ai banchi del check-in del volo, primo piano partenze, aeroporto di Torino, con un documento di identità in corso di validità e valido per l'espatrio.",
     "Al banco del check-in troverai un'assistenza dedicata che ti aiuterà nel disbrigo delle pratiche aeroportuali.",
   ]
 );
@@ -138,7 +138,7 @@ const MILANO_20: Convocazione = diretto(
   DOM_20,
   "AZ 312 Milano Linate → Parigi Charles de Gaulle · 14:25 – 16:00",
   [
-    "Presentati alle ore 12:00 direttamente ai banchi del check-in del volo ITA, area 1, primo piano partenze, aeroporto di Milano Linate, con un documento d'identità in corso di validità e valido per l'espatrio.",
+    "Presentati alle ore 12:00 direttamente ai banchi del check-in del volo ITA, area 1, primo piano partenze, aeroporto di Milano Linate, con un documento di identità in corso di validità e valido per l'espatrio.",
     "Al banco del check-in troverai un'assistenza dedicata che ti aiuterà nel disbrigo delle pratiche aeroportuali.",
   ]
 );
@@ -147,7 +147,7 @@ const ROMA_20: Convocazione = diretto(
   DOM_20,
   "AZ 318 Roma Fiumicino → Parigi Charles de Gaulle · 11:00 – 13:15",
   [
-    "Presentati alle ore 08:30 direttamente ai banchi del check-in del volo ITA, Terminal T1, aeroporto di Roma Fiumicino, con un documento d'identità in corso di validità e valido per l'espatrio.",
+    "Presentati alle ore 08:30 direttamente ai banchi del check-in del volo ITA, Terminal T1, aeroporto di Roma Fiumicino, con un documento di identità in corso di validità e valido per l'espatrio.",
     "Al banco del check-in troverai un'assistenza dedicata che ti aiuterà nel disbrigo delle pratiche aeroportuali.",
   ]
 );
@@ -177,7 +177,7 @@ export const CONVOCAZIONI: Record<string, Convocazione> = {
     SAB_19,
     "AF 1103 Torino → Parigi Charles de Gaulle · 10:20 – 11:50",
     [
-      "Presentati alle ore 07:50 direttamente ai banchi del check-in del volo, primo piano partenze, aeroporto di Torino, munito di documento d'identità in corso di validità e valido per l'espatrio.",
+      "Presentati alle ore 07:50 direttamente ai banchi del check-in del volo, primo piano partenze, aeroporto di Torino, munito di documento di identità in corso di validità e valido per l'espatrio.",
       "Al tuo arrivo al banco del check-in troverai un'assistenza dedicata che ti aiuterà nel disbrigo delle pratiche aeroportuali.",
     ]
   ),
@@ -186,7 +186,7 @@ export const CONVOCAZIONI: Record<string, Convocazione> = {
     SAB_19,
     "AF 1103 Torino → Parigi Charles de Gaulle · 10:20 – 11:50",
     [
-      "Presentati alle ore 07:50 direttamente ai banchi del check-in del volo, primo piano partenze, aeroporto di Torino, munito di documento d'identità in corso di validità e valido per l'espatrio.",
+      "Presentati alle ore 07:50 direttamente ai banchi del check-in del volo, primo piano partenze, aeroporto di Torino, munito di documento di identità in corso di validità e valido per l'espatrio.",
       "Al tuo arrivo al banco del check-in troverai un'assistenza dedicata che ti aiuterà nel disbrigo delle pratiche aeroportuali.",
     ]
   ),
@@ -199,7 +199,7 @@ export const CONVOCAZIONI: Record<string, Convocazione> = {
       "AZ 312 Milano Linate → Parigi Charles de Gaulle · 14:25 – 16:00",
     ],
     call: [
-      "Presentati in aeroporto due ore prima del decollo, al banco del check-in del volo, con un documento d'identità in corso di validità e valido per l'espatrio.",
+      "Presentati in aeroporto due ore prima del decollo, al banco del check-in del volo, con un documento di identità in corso di validità e valido per l'espatrio.",
       "Al tuo arrivo a Milano Linate, recupera il bagaglio e dirigiti verso l'uscita. Agli arrivi troverai un'assistenza dedicata che ti accompagnerà ai banchi del check-in del volo per Parigi.",
       "Al banco del check-in troverai un'assistenza dedicata che ti aiuterà nel disbrigo delle pratiche aeroportuali.",
     ],
