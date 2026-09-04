@@ -5,16 +5,11 @@ import { BAGGAGE_DISCLAIMER, PARKING_URL } from "@/lib/convocazioni";
 export function ConvocazioneCard({ conv }: { conv: Convocazione }) {
   return (
     <section className="overflow-hidden rounded-2xl bg-white shadow-card">
-      {/* Fascia superiore con titolo e data */}
-      <div className="flex items-center justify-between bg-sistemi-red px-5 py-3 text-white">
+      {/* Fascia superiore con titolo */}
+      <div className="flex items-center bg-sistemi-red px-5 py-3 text-white">
         <span className="text-sm font-bold uppercase tracking-wide">
           📄 La tua convocazione
         </span>
-        {conv.dateLabel ? (
-          <span className="text-xs font-medium text-white/85">
-            {conv.dateLabel}
-          </span>
-        ) : null}
       </div>
 
       <div className="space-y-5 px-5 py-5">
