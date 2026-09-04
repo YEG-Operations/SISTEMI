@@ -117,7 +117,7 @@ export function ConvocazioneActions({
     // Logo Sistemi nella fascia (angolo destro). Se non è raggiungibile, il
     // PDF viene comunque generato senza logo.
     try {
-      const res = await fetch("/brand/logo.png");
+      const res = await fetch("/brand/logo-pdf.png");
       const blob = await res.blob();
       const logo: string = await new Promise((resolve, reject) => {
         const fr = new FileReader();
