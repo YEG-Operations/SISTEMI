@@ -18,6 +18,14 @@ export function ConvocazioneActions({
   backHref: string;
 }) {
   async function handleDownload() {
+    // La pagina gira dentro l'iframe di Cvent (embed). Gli iframe "sandboxed"
+    // bloccano il download diretto (<a download>), quindi in contesto embeddato
+    // mostriamo il PDF in una nuova scheda a livello top. La scheda va aperta
+    // SUBITO, in modo sincrono: gli await successivi (import di jsPDF, fetch del
+    // logo) romperebbero il "gesto utente" e il browser bloccherebbe il popup.
+    const embedded = typeof window !== "undefined" && window.self !== window.top;
+    const preWin = embedded ? window.open("", "_blank") : null;
+
     const { jsPDF } = await import("jspdf");
     const doc = new jsPDF({ unit: "pt", format: "a4" });
 
@@ -205,7 +213,35 @@ export function ConvocazioneActions({
       drawRich([{ text: clean(conv.notes.join(" ")), bold: true }], 10, 14, INK);
     }
 
-    doc.save(filename);
+    // Genera il PDF come blob e ricava un URL locale.
+    const blob = doc.output("blob");
+    const url = URL.createObjectURL(blob);
+
+    const triggerDownload = () => {
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.rel = "noopener";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    };
+
+    if (embedded) {
+      if (preWin) {
+        // Scheda già aperta col gesto utente: ci carichiamo il PDF.
+        preWin.location.href = url;
+      } else {
+        // Popup bloccato: ultimo tentativo col download classico.
+        triggerDownload();
+      }
+    } else {
+      // Contesto normale (non embeddato): download diretto.
+      triggerDownload();
+    }
+
+    // Rilascia l'URL dopo un minuto (il tempo di aprire/scaricare).
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
   }
 
   return (
