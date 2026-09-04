@@ -42,11 +42,7 @@ export async function ConvocazionePage({
           {convocazione ? (
             <>
               <ConvocazioneCard conv={convocazione} />
-              <ConvocazioneActions
-                conv={convocazione}
-                filename="Convocazione-Sistemi50-Parigi.pdf"
-                backHref={backHref}
-              />
+              <ConvocazioneActions backHref={backHref} />
             </>
           ) : (
             <>
