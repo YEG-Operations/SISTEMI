@@ -269,6 +269,40 @@ export const SCENARIOS: Record<string, Scenario> = {
       "22:50"
     )
   ),
+  /**
+   * Variante di `cagliari` per un solo partecipante: la tratta Cagliari →
+   * Milano Linate è anticipata a sabato 19 (volo XZ 2354, in sostituzione del
+   * W2 8640 del 20). Il 20 si presenta direttamente a Linate per il volo
+   * Parigi; il pernottamento a Milano è a cura del partecipante e non viene
+   * riportato. Rientro identico allo scenario `cagliari`.
+   */
+  "cagliari-19sep": {
+    title: "Il tuo viaggio · Cagliari",
+    subtitle:
+      "Partenza sabato 19 settembre da Cagliari, volo per Parigi domenica 20 da Milano Linate",
+    legs: [
+      leg(
+        "Andata",
+        SAB_19,
+        "XZ 2354 Cagliari → Milano Linate",
+        "Cagliari (CAG)",
+        "Milano Linate (LIN)",
+        "08:00",
+        "09:20"
+      ),
+      MILANO.andata(DOM_20),
+      MILANO.ritorno(MER_23),
+      leg(
+        "Ritorno",
+        MER_23,
+        "W2 8645 Milano Linate → Cagliari",
+        "Milano Linate (LIN)",
+        "Cagliari (CAG)",
+        "21:30",
+        "22:50"
+      ),
+    ],
+  },
 
   // --- Andata + Ritorno via Roma Fiumicino ---
   palermo: viaHub(

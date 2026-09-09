@@ -208,6 +208,12 @@ export const CONVOCAZIONI: Record<string, Convocazione> = {
     parking: true,
     notes: [NOTE_FUTURE],
   },
+  // Bretella Cagliari → Linate anticipata al 19 settembre (scenario
+  // `cagliari-19sep`): tra le due tratte c'è una notte, quindi non valgono né la
+  // convocazione "due ore prima" a Cagliari né l'assistenza agli arrivi di
+  // Linate. Il 20 si presenta a Linate come i partecipanti in partenza da
+  // Milano: la convocazione è quindi identica a quella di `milanos`.
+  "cagliari-19sep": MILANO_20,
 
   // --- Voli di avvicinamento via Roma Fiumicino ---
   palermo: viaFco("AZ 1770 Palermo → Roma Fiumicino · 08:00 – 09:10"),

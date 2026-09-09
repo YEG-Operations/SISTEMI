@@ -44,6 +44,10 @@ const OVERRIDES: Record<string, string> = {
   "6370c061-75e1-499e-b669-448b88947e5a": "torino-19-24sep",
   // Filippo Ravenni: nessun rientro su Roma, resta la sola andata.
   "f3b67120-fd14-4810-b292-f9d1019f65cf": "roma-andata",
+  // Bretella Cagliari → Linate anticipata al 19 set (XZ 2354 al posto del
+  // W2 8640 del 20): vale per questo solo partecipante, gli altri di `cagliari`
+  // restano al 20.
+  "3c6516d8-c09d-4d9a-9a94-af85b16cd1b2": "cagliari-19sep",
 };
 
 /** Porta un valore "Viaggio" dell'Excel alla chiave scenario corretta. */
