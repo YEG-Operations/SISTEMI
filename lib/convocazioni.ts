@@ -211,9 +211,22 @@ export const CONVOCAZIONI: Record<string, Convocazione> = {
   // Bretella Cagliari → Linate anticipata al 19 settembre (scenario
   // `cagliari-19sep`): tra le due tratte c'è una notte, quindi non valgono né la
   // convocazione "due ore prima" a Cagliari né l'assistenza agli arrivi di
-  // Linate. Il 20 si presenta a Linate come i partecipanti in partenza da
-  // Milano: la convocazione è quindi identica a quella di `milanos`.
-  "cagliari-19sep": MILANO_20,
+  // Linate. Entrambe le tratte sono elencate, ciascuna con la sua data, ma la
+  // convocazione vera e propria è quella di Linate del 20 (come `milanos`).
+  "cagliari-19sep": {
+    dateLabel: "Sabato 19 e domenica 20 settembre 2026",
+    flights: [
+      "Sabato 19 settembre · XZ 2354 Cagliari → Milano Linate · 08:00 – 09:20",
+      "Domenica 20 settembre · AZ 312 Milano Linate → Parigi Charles de Gaulle · 14:25 – 16:00",
+    ],
+    call: [
+      "Domenica 20 settembre presentati alle ore 12:00 direttamente ai banchi del check-in del volo ITA, area 1, primo piano partenze, aeroporto di Milano Linate, con un documento di identità in corso di validità e valido per l'espatrio.",
+      "Al banco del check-in troverai un'assistenza dedicata che ti aiuterà nel disbrigo delle pratiche aeroportuali.",
+    ],
+    baggage: BAGGAGE_STD,
+    parking: true,
+    notes: [NOTE_FUTURE],
+  },
 
   // --- Voli di avvicinamento via Roma Fiumicino ---
   palermo: viaFco("AZ 1770 Palermo → Roma Fiumicino · 08:00 – 09:10"),
