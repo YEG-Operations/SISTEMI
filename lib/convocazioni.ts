@@ -209,10 +209,11 @@ export const CONVOCAZIONI: Record<string, Convocazione> = {
     notes: [NOTE_FUTURE],
   },
   // Bretella Cagliari → Linate anticipata al 19 settembre (scenario
-  // `cagliari-19sep`): tra le due tratte c'è una notte, quindi non valgono né la
-  // convocazione "due ore prima" a Cagliari né l'assistenza agli arrivi di
-  // Linate. Entrambe le tratte sono elencate, ciascuna con la sua data, ma la
-  // convocazione vera e propria è quella di Linate del 20 (come `milanos`).
+  // `cagliari-19sep`): tra le due tratte c'è una notte, quindi non vale
+  // l'assistenza agli arrivi di Linate prevista dallo scenario `cagliari`.
+  // Ogni tratta ha la sua data e la sua convocazione: il 19 a Cagliari (due ore
+  // prima del decollo), il 20 a Linate come per `milanos`.
+  // Nessun blocco parcheggio: non previsto per questo partecipante.
   "cagliari-19sep": {
     dateLabel: "Sabato 19 e domenica 20 settembre 2026",
     flights: [
@@ -220,11 +221,11 @@ export const CONVOCAZIONI: Record<string, Convocazione> = {
       "Domenica 20 settembre · AZ 312 Milano Linate → Parigi Charles de Gaulle · 14:25 – 16:00",
     ],
     call: [
-      "Domenica 20 settembre presentati alle ore 12:00 direttamente ai banchi del check-in del volo ITA, area 1, primo piano partenze, aeroporto di Milano Linate, con un documento di identità in corso di validità e valido per l'espatrio.",
+      "Sabato 19 settembre — Sei pregato di recarti in aeroporto due ore prima del decollo del volo, al banco check-in del volo, con un documento d'identità in corso di validità e valido per l'espatrio.",
+      "Domenica 20 settembre — Presentati alle ore 12:00 direttamente ai banchi del check-in del volo ITA, area 1, primo piano partenze, aeroporto di Milano Linate, con un documento di identità in corso di validità e valido per l'espatrio.",
       "Al banco del check-in troverai un'assistenza dedicata che ti aiuterà nel disbrigo delle pratiche aeroportuali.",
     ],
     baggage: BAGGAGE_STD,
-    parking: true,
     notes: [NOTE_FUTURE],
   },
 
