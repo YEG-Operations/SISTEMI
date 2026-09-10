@@ -111,11 +111,12 @@ function viaFco(localLeg: string, notes: string[] = [NOTE_FUTURE_SHORT]): Convoc
 
 /**
  * Convocazione per chi arriva a Parigi in autonomia (nessun volo di andata).
- * Non mostra il volo di rientro né la relativa data, e non riporta il parcheggio:
- * queste informazioni restano nel piano viaggi.
+ * Non mostra il volo di rientro, né il parcheggio: restano nel piano viaggi.
+ * La data è quella del ritrovo in hotel (domenica 20), non quella del rientro.
  */
 function soloRientro(): Convocazione {
   return {
+    dateLabel: DOM_20,
     hotel: HOTEL,
     call: [DOC_REMINDER],
     baggageLabel: "Franchigia bagaglio volo di rientro",
@@ -266,6 +267,8 @@ export const PERSON_CONVOCAZIONI: Record<string, Convocazione> = {
   // Parigi in autonomia, ha il volo di rientro. Testo dedicato dal Word di
   // riferimento. L'associazione id -> nominativo è nel file locale (non versionato).
   "149556d2-c809-4470-b39e-e396c5178bd3": {
+    // Come per gli altri ritrovi in hotel, la data è quella dell'arrivo (20).
+    dateLabel: DOM_20,
     hotel: HOTEL,
     call: [DOC_REMINDER],
     baggage: BAGGAGE_STD,

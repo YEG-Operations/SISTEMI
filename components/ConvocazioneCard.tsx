@@ -13,7 +13,19 @@ export function ConvocazioneCard({ conv }: { conv: Convocazione }) {
       </div>
 
       <div className="space-y-5 px-5 py-5">
-        {conv.hotel ? <Block label="Ritrovo">{listOf(conv.hotel)}</Block> : null}
+        {conv.hotel ? (
+          <Block label="Ritrovo">
+            {/* Senza voli la data non avrebbe dove comparire (nelle altre
+                convocazioni sta sopra l'operativo): la mostriamo qui, sopra il
+                ritrovo in hotel. */}
+            {conv.dateLabel && !conv.flights ? (
+              <p className="mb-2 text-sm font-bold text-sistemi-red">
+                {conv.dateLabel}
+              </p>
+            ) : null}
+            {listOf(conv.hotel)}
+          </Block>
+        ) : null}
 
         {conv.flights ? (
           <Block label={conv.flightsLabel ?? "Volo"}>
