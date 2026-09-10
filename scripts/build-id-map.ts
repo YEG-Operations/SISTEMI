@@ -48,6 +48,9 @@ const OVERRIDES: Record<string, string> = {
   // W2 8640 del 20): vale per questo solo partecipante, gli altri di `cagliari`
   // restano al 20.
   "3c6516d8-c09d-4d9a-9a94-af85b16cd1b2": "cagliari-19sep",
+  // Non vola in andata (raggiunge Parigi in autonomia), usufruisce del solo
+  // volo di rientro su Milano Linate: da `milanos` a `milano-ritorno`.
+  "d9ab6529-04e3-4d02-92b9-05b65a6ef113": "milano-ritorno",
 };
 
 /** Porta un valore "Viaggio" dell'Excel alla chiave scenario corretta. */
