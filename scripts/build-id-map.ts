@@ -51,6 +51,9 @@ const OVERRIDES: Record<string, string> = {
   // Non vola in andata (raggiunge Parigi in autonomia), usufruisce del solo
   // volo di rientro su Milano Linate: da `milanos` a `milano-ritorno`.
   "d9ab6529-04e3-4d02-92b9-05b65a6ef113": "milano-ritorno",
+  // Aggiunta l'andata AF 1103 del 20 set: da solo rientro su Torino a viaggio
+  // completo, quindi `torinos`.
+  "149556d2-c809-4470-b39e-e396c5178bd3": "torinos",
 };
 
 /** Porta un valore "Viaggio" dell'Excel alla chiave scenario corretta. */

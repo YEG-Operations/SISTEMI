@@ -263,16 +263,9 @@ export const CONVOCAZIONI: Record<string, Convocazione> = {
 // per tipologia quando presente.
 
 export const PERSON_CONVOCAZIONI: Record<string, Convocazione> = {
-  // Partecipante con convocazione dedicata (scenario torino-ritorno): arriva a
-  // Parigi in autonomia, ha il volo di rientro. Testo dedicato dal Word di
-  // riferimento. L'associazione id -> nominativo è nel file locale (non versionato).
-  "149556d2-c809-4470-b39e-e396c5178bd3": {
-    // Come per gli altri ritrovi in hotel, la data è quella dell'arrivo (20).
-    dateLabel: DOM_20,
-    hotel: HOTEL,
-    call: [DOC_REMINDER],
-    baggage: BAGGAGE_STD,
-  },
+  // Nessun override attivo: l'unico partecipante che ne aveva uno (arrivo a
+  // Parigi in autonomia, solo volo di rientro) ha ora l'andata AF 1103 del
+  // 20 set e usa la convocazione standard di Torino.
 };
 
 // --- Risoluzione id → convocazione -----------------------------------------
