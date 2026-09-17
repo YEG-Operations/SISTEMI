@@ -253,7 +253,8 @@ export const SCENARIOS: Record<string, Scenario> = {
     leg(
       "Andata",
       DOM_20,
-      "W2 8640 Cagliari → Milano Linate",
+      // Il Word "Partenze del 20 sep CAG - LIN" riporta XZ 2354 (non W2 8640).
+      "XZ 2354 Cagliari → Milano Linate",
       "Cagliari (CAG)",
       "Milano Linate (LIN)",
       "08:00",
@@ -385,7 +386,8 @@ export const SCENARIOS: Record<string, Scenario> = {
       "Brindisi (BDS)",
       "Roma Fiumicino (FCO)",
       "06:20",
-      "07:35"
+      // Il Word "Partenze del 20 sep BDS - FCO" riporta 07:25 (non 07:35).
+      "07:25"
     ),
     leg(
       "Ritorno",

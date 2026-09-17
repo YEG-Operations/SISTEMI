@@ -60,6 +60,27 @@ export function ConvocazioneCard({ conv }: { conv: Convocazione }) {
           </Block>
         ) : null}
 
+        {conv.contacts?.length ? (
+          <Block label="Assistenza">
+            <ul className="space-y-1.5 text-sm leading-relaxed text-sistemi-ink">
+              {conv.contacts.map((c) => (
+                <li key={c.phone} className="flex flex-wrap items-baseline gap-x-2">
+                  <span className="font-semibold">{c.name}</span>
+                  <a
+                    href={`tel:${c.phone.replace(/[^+\d]/g, "")}`}
+                    className="font-bold text-sistemi-red underline underline-offset-2"
+                  >
+                    {c.phone}
+                  </a>
+                  {c.note ? (
+                    <span className="text-xs text-sistemi-ink/60">({c.note})</span>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          </Block>
+        ) : null}
+
         {conv.baggage ? (
           <Block label={conv.baggageLabel ?? "Franchigia bagaglio"}>
             <ul className="space-y-1 text-sm leading-relaxed text-sistemi-ink">
