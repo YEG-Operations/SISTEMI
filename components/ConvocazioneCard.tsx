@@ -52,32 +52,40 @@ export function ConvocazioneCard({ conv }: { conv: Convocazione }) {
 
         {conv.call ? (
           <Block label="Convocazione">
-            <div className="space-y-1.5 text-sm leading-relaxed text-sistemi-ink">
-              {conv.call.map((l, i) => (
-                <p key={i}>{withBoldTimes(l)}</p>
-              ))}
+            <div className="space-y-2.5 text-sm leading-relaxed text-sistemi-ink">
+              {conv.call.map((step, i) =>
+                typeof step === "string" ? (
+                  <p key={i}>{withBoldTimes(step)}</p>
+                ) : (
+                  <div key={i} className="space-y-1.5">
+                    <p>{withBoldTimes(step.text)}</p>
+                    {/* I recapiti stanno sotto la riga a cui si riferiscono:
+                        in più tratte le assistenze sono diverse. */}
+                    <ul className="space-y-1 border-l-2 border-sistemi-red/30 pl-3">
+                      {step.contacts.map((c) => (
+                        <li
+                          key={c.phone}
+                          className="flex flex-wrap items-baseline gap-x-2"
+                        >
+                          <span className="font-semibold">{c.name}</span>
+                          <a
+                            href={`tel:${c.phone.replace(/[^+\d]/g, "")}`}
+                            className="font-bold text-sistemi-red underline underline-offset-2"
+                          >
+                            {c.phone}
+                          </a>
+                          {c.note ? (
+                            <span className="text-xs text-sistemi-ink/60">
+                              ({c.note})
+                            </span>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )
+              )}
             </div>
-          </Block>
-        ) : null}
-
-        {conv.contacts?.length ? (
-          <Block label="Assistenza">
-            <ul className="space-y-1.5 text-sm leading-relaxed text-sistemi-ink">
-              {conv.contacts.map((c) => (
-                <li key={c.phone} className="flex flex-wrap items-baseline gap-x-2">
-                  <span className="font-semibold">{c.name}</span>
-                  <a
-                    href={`tel:${c.phone.replace(/[^+\d]/g, "")}`}
-                    className="font-bold text-sistemi-red underline underline-offset-2"
-                  >
-                    {c.phone}
-                  </a>
-                  {c.note ? (
-                    <span className="text-xs text-sistemi-ink/60">({c.note})</span>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
           </Block>
         ) : null}
 

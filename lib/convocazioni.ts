@@ -29,6 +29,20 @@ export type Contact = {
   note?: string;
 };
 
+/**
+ * Riga di convocazione. I contatti stanno attaccati alla riga a cui si
+ * riferiscono e non in fondo alla card: in più tratte le assistenze sono
+ * diverse (es. un referente per il primo volo, altre solo al transito di
+ * Fiumicino) e un elenco unico in coda non direbbe chi chiamare e quando.
+ */
+export type CallStep = string | { text: string; contacts: Contact[] };
+
+/** Riga di convocazione con i relativi recapiti di assistenza. */
+const conContatti = (text: string, ...contacts: Contact[]): CallStep => ({
+  text,
+  contacts,
+});
+
 /** Blocco di una convocazione. Tutti i campi sono opzionali: si mostra solo ciò che serve. */
 export type Convocazione = {
   /** Data principale mostrata nella fascia della card (assente per chi non ha volo di andata). */
@@ -38,9 +52,7 @@ export type Convocazione = {
   /** Etichetta della sezione voli (default "Volo"). */
   flightsLabel?: string;
   /** Dove/quando presentarsi e altre indicazioni operative. */
-  call?: string[];
-  /** Assistenti dedicate con relativi numeri (blocco "Assistenza"). */
-  contacts?: Contact[];
+  call?: CallStep[];
   /** Informazioni hotel (per chi arriva in autonomia o ha solo il rientro). */
   hotel?: string[];
   /** Franchigia bagaglio. */
@@ -104,16 +116,23 @@ const duePrima = (volo: string) =>
 const allOra = (volo: string, ora: string) =>
   `Sei pregato di presentarti al banco check-in del volo ${volo} alle ore ${ora}, munito di ${DOC_ESPATRIO}.`;
 
-/** Transito a Roma Fiumicino: bagaglio spedito a Parigi e meeting point Feltrinelli. */
-const FCO_TRANSITO = [
-  "Il tuo bagaglio verrà spedito direttamente all'aeroporto di Parigi Charles de Gaulle.",
-  "Una volta arrivato a Roma Fiumicino, recati al meeting point della Libreria Feltrinelli in area transiti, ad inizio corridoio gates voli ITA (Terminal T1), dove troverai le nostre assistenti dedicate che ti daranno indicazioni sul volo per Parigi.",
-];
-
 /** Assistenti al transito di Roma Fiumicino: identiche per tutte le partenze via FCO. */
 const CONTATTI_TRANSITO_FCO: Contact[] = [
   { name: "Assistenza ai transiti", phone: "+39 335 779 1234", note: ATTIVA_MATTINO_20 },
   { name: "Alessandra", phone: "+39 338 844 6639", note: ATTIVA_MATTINO_20 },
+];
+
+/**
+ * Transito a Roma Fiumicino: bagaglio spedito a Parigi e meeting point
+ * Feltrinelli. I recapiti delle assistenti stanno su questa riga perché
+ * rispondono solo per il transito, non per il volo di partenza.
+ */
+const FCO_TRANSITO: CallStep[] = [
+  "Il tuo bagaglio verrà spedito direttamente all'aeroporto di Parigi Charles de Gaulle.",
+  conContatti(
+    "Una volta arrivato a Roma Fiumicino, recati al meeting point della Libreria Feltrinelli in area transiti, ad inizio corridoio gates voli ITA (Terminal T1), dove troverai le nostre assistenti dedicate che ti daranno indicazioni sul volo per Parigi.",
+    ...CONTATTI_TRANSITO_FCO
+  ),
 ];
 
 /** Referente per le partenze via FCO senza assistente in aeroporto di origine. */
@@ -129,15 +148,13 @@ const CONTATTO_DAVIDE: Contact = {
 function diretto(
   dateLabel: string,
   flight: string,
-  call: string[],
-  contacts?: Contact[],
+  call: CallStep[],
   notes: string[] = []
 ): Convocazione {
   return {
     dateLabel,
     flights: [flight],
     call,
-    contacts,
     baggage: BAGGAGE_STD,
     parking: true,
     notes,
@@ -150,16 +167,11 @@ function diretto(
  * presentazione ed eventuale assistente in loco); il transito a Fiumicino è
  * identico per tutti.
  */
-function viaFco(
-  localLeg: string,
-  apertura: string[],
-  contattiPartenza: Contact[] = []
-): Convocazione {
+function viaFco(localLeg: string, apertura: CallStep[]): Convocazione {
   return {
     dateLabel: DOM_20,
     flights: [localLeg, "AZ 318 Roma Fiumicino → Parigi Charles de Gaulle · 11:00 – 13:15"],
     call: [...apertura, ...FCO_TRANSITO],
-    contacts: [...contattiPartenza, ...CONTATTI_TRANSITO_FCO],
     baggage: BAGGAGE_STD,
     parking: true,
   };
@@ -188,11 +200,11 @@ const TORINO_20: Convocazione = diretto(
   "AF 1103 Torino → Parigi Charles de Gaulle · 10:20 – 11:50",
   [
     `Presentati alle ore 07:50 direttamente ai banchi del check-in del volo, primo piano partenze, aeroporto di Torino, con ${DOC_ESPATRIO}.`,
-    "Al banco del check-in troverai le assistenti dedicate Giada e Andreana, che ti aiuteranno con le pratiche di check-in e la consegna del bagaglio.",
-  ],
-  [
-    { name: "Giada", phone: "+39 340 051 3990", note: ATTIVA_CONVOCAZIONE },
-    { name: "Andreana", phone: "+39 335 693 2876", note: ATTIVA_CONVOCAZIONE },
+    conContatti(
+      "Al banco del check-in troverai le assistenti dedicate Giada e Andreana, che ti aiuteranno con le pratiche di check-in e la consegna del bagaglio.",
+      { name: "Giada", phone: "+39 340 051 3990", note: ATTIVA_CONVOCAZIONE },
+      { name: "Andreana", phone: "+39 335 693 2876", note: ATTIVA_CONVOCAZIONE }
+    ),
   ]
 );
 
@@ -201,11 +213,11 @@ const MILANO_20: Convocazione = diretto(
   "AZ 312 Milano Linate → Parigi Charles de Gaulle · 14:25 – 16:00",
   [
     `Presentati alle ore 12:00 direttamente ai banchi del check-in del volo ITA, area 1, primo piano partenze, aeroporto di Milano Linate, con ${DOC_ESPATRIO}.`,
-    "Al banco del check-in troverai le assistenti dedicate Youstina e Martina, che ti aiuteranno con le pratiche di check-in e la consegna del bagaglio.",
-  ],
-  [
-    { name: "Youstina", phone: "+39 380 349 1575", note: ATTIVA_CONVOCAZIONE },
-    { name: "Martina", phone: "+39 329 229 8549", note: ATTIVA_CONVOCAZIONE },
+    conContatti(
+      "Al banco del check-in troverai le assistenti dedicate Youstina e Martina, che ti aiuteranno con le pratiche di check-in e la consegna del bagaglio.",
+      { name: "Youstina", phone: "+39 380 349 1575", note: ATTIVA_CONVOCAZIONE },
+      { name: "Martina", phone: "+39 329 229 8549", note: ATTIVA_CONVOCAZIONE }
+    ),
   ]
 );
 
@@ -214,9 +226,11 @@ const ROMA_20: Convocazione = diretto(
   "AZ 318 Roma Fiumicino → Parigi Charles de Gaulle · 11:00 – 13:15",
   [
     `Presentati alle ore 08:30 direttamente ai banchi del check-in del volo ITA, Terminal T1, aeroporto di Roma Fiumicino, con ${DOC_ESPATRIO}.`,
-    "Al banco del check-in troverai l'assistente dedicata Samantha, che ti aiuterà con le pratiche di check-in e la consegna del bagaglio.",
-  ],
-  [{ name: "Samantha", phone: "+39 379 182 9181", note: ATTIVA_CONVOCAZIONE }]
+    conContatti(
+      "Al banco del check-in troverai l'assistente dedicata Samantha, che ti aiuterà con le pratiche di check-in e la consegna del bagaglio.",
+      { name: "Samantha", phone: "+39 379 182 9181", note: ATTIVA_CONVOCAZIONE }
+    ),
+  ]
 );
 
 const TORINO_19: Convocazione = diretto(
@@ -224,9 +238,11 @@ const TORINO_19: Convocazione = diretto(
   "AF 1103 Torino → Parigi Charles de Gaulle · 10:20 – 11:50",
   [
     `Presentati alle ore 08:15 direttamente ai banchi del check-in del volo, primo piano partenze, aeroporto di Torino, munito di ${DOC_ESPATRIO}.`,
-    "Al tuo arrivo al banco del check-in troverai Giada, che ti fornirà le carte di imbarco e il fast track.",
-  ],
-  [{ name: "Giada", phone: "+39 340 051 3990", note: ATTIVA_CONVOCAZIONE }]
+    conContatti(
+      "Al tuo arrivo al banco del check-in troverai Giada, che ti fornirà le carte di imbarco e il fast track.",
+      { name: "Giada", phone: "+39 340 051 3990", note: ATTIVA_CONVOCAZIONE }
+    ),
+  ]
 );
 
 /** Convocazioni indicizzate per chiave scenario (come in lib/scenarios.ts). */
@@ -266,10 +282,10 @@ export const CONVOCAZIONI: Record<string, Convocazione> = {
     call: [
       `Sei pregato di recarti in aeroporto a Cagliari due ore prima del decollo del volo, al banco check-in del volo, con ${DOC_ESPATRIO}.`,
       BOARDING_PASS,
-      "Al tuo arrivo a Milano Linate, recupera il bagaglio e dirigiti verso l'uscita. Agli arrivi troverai Youstina, che ti accompagnerà ai banchi check-in del volo per Parigi e ti aiuterà nelle pratiche di check-in e di consegna del bagaglio.",
-    ],
-    contacts: [
-      { name: "Youstina", phone: "+39 380 349 1575", note: ATTIVA_MATTINO_20 },
+      conContatti(
+        "Al tuo arrivo a Milano Linate, recupera il bagaglio e dirigiti verso l'uscita. Agli arrivi troverai Youstina, che ti accompagnerà ai banchi check-in del volo per Parigi e ti aiuterà nelle pratiche di check-in e di consegna del bagaglio.",
+        { name: "Youstina", phone: "+39 380 349 1575", note: ATTIVA_MATTINO_20 }
+      ),
     ],
     baggage: BAGGAGE_STD,
     parking: true,
@@ -279,7 +295,6 @@ export const CONVOCAZIONI: Record<string, Convocazione> = {
   // l'assistenza agli arrivi di Linate prevista dallo scenario `cagliari`.
   // Ogni tratta ha la sua data e la sua convocazione: il 19 a Cagliari (due ore
   // prima del decollo), il 20 a Linate come per `milanos`.
-  // Nessun blocco parcheggio: non previsto per questo partecipante.
   "cagliari-19sep": {
     dateLabel: "Sabato 19 e domenica 20 settembre 2026",
     flights: [
@@ -290,52 +305,49 @@ export const CONVOCAZIONI: Record<string, Convocazione> = {
       `Sabato 19 settembre — Sei pregato di recarti in aeroporto a Cagliari due ore prima del decollo del volo, al banco check-in del volo, con ${DOC_ESPATRIO}.`,
       BOARDING_PASS,
       `Domenica 20 settembre — Presentati alle ore 12:00 direttamente ai banchi del check-in del volo ITA, area 1, primo piano partenze, aeroporto di Milano Linate, con ${DOC_ESPATRIO}.`,
-      "Al banco del check-in troverai le assistenti dedicate Youstina e Martina, che ti aiuteranno con le pratiche di check-in e la consegna del bagaglio.",
-    ],
-    contacts: [
-      { name: "Youstina", phone: "+39 380 349 1575", note: ATTIVA_CONVOCAZIONE },
-      { name: "Martina", phone: "+39 329 229 8549", note: ATTIVA_CONVOCAZIONE },
+      conContatti(
+        "Al banco del check-in troverai le assistenti dedicate Youstina e Martina, che ti aiuteranno con le pratiche di check-in e la consegna del bagaglio.",
+        { name: "Youstina", phone: "+39 380 349 1575", note: ATTIVA_CONVOCAZIONE },
+        { name: "Martina", phone: "+39 329 229 8549", note: ATTIVA_CONVOCAZIONE }
+      ),
     ],
     baggage: BAGGAGE_STD,
+    parking: true,
   },
 
   // --- Voli di avvicinamento via Roma Fiumicino ---
-  palermo: viaFco(
-    "AZ 1770 Palermo → Roma Fiumicino · 08:00 – 09:10",
-    [
-      allOra("AZ 1770", "06:00"),
+  palermo: viaFco("AZ 1770 Palermo → Roma Fiumicino · 08:00 – 09:10", [
+    allOra("AZ 1770", "06:00"),
+    conContatti(
       "Al banco del check-in troverai l'assistente dedicata Lucrezia, che ti aiuterà nelle procedure di check-in e nell'imbarco del bagaglio.",
-    ],
-    [{ name: "Lucrezia", phone: "+39 328 569 7651", note: ATTIVA_CONVOCAZIONE }]
-  ),
-  catania: viaFco(
-    "AZ 1736 Catania → Roma Fiumicino · 07:05 – 08:30",
-    [
-      allOra("AZ 1736", "05:05"),
+      { name: "Lucrezia", phone: "+39 328 569 7651", note: ATTIVA_CONVOCAZIONE }
+    ),
+  ]),
+  catania: viaFco("AZ 1736 Catania → Roma Fiumicino · 07:05 – 08:30", [
+    allOra("AZ 1736", "05:05"),
+    conContatti(
       "Al banco del check-in troverai l'assistente dedicata Daniela Luana, che ti aiuterà nelle procedure di check-in e nell'imbarco del bagaglio.",
-    ],
-    [{ name: "Daniela Luana", phone: "+39 333 801 5882", note: ATTIVA_CONVOCAZIONE }]
-  ),
-  bari: viaFco(
-    "AZ 1602 Bari → Roma Fiumicino · 06:30 – 07:40",
-    [duePrima("AZ 1602"), BOARDING_PASS],
-    [CONTATTO_DAVIDE]
-  ),
-  brindisi: viaFco(
-    "AZ 1620 Brindisi → Roma Fiumicino · 06:20 – 07:25",
-    [duePrima("AZ 1620"), BOARDING_PASS],
-    [CONTATTO_DAVIDE]
-  ),
-  lamezia: viaFco(
-    "AZ 1162 Lamezia Terme → Roma Fiumicino · 06:15 – 07:30",
-    [duePrima("AZ 1162"), BOARDING_PASS],
-    [CONTATTO_DAVIDE]
-  ),
-  napoli: viaFco(
-    "AZ 1268 Napoli → Roma Fiumicino · 06:35 – 07:25",
-    [duePrima("AZ 1268"), BOARDING_PASS],
-    [CONTATTO_DAVIDE]
-  ),
+      { name: "Daniela Luana", phone: "+39 333 801 5882", note: ATTIVA_CONVOCAZIONE }
+    ),
+  ]),
+  // Partenze senza assistente in aeroporto di origine: il riferimento per il
+  // primo volo è Davide, le assistenti di Fiumicino rispondono solo al transito.
+  bari: viaFco("AZ 1602 Bari → Roma Fiumicino · 06:30 – 07:40", [
+    conContatti(duePrima("AZ 1602"), CONTATTO_DAVIDE),
+    BOARDING_PASS,
+  ]),
+  brindisi: viaFco("AZ 1620 Brindisi → Roma Fiumicino · 06:20 – 07:35", [
+    conContatti(duePrima("AZ 1620"), CONTATTO_DAVIDE),
+    BOARDING_PASS,
+  ]),
+  lamezia: viaFco("AZ 1162 Lamezia Terme → Roma Fiumicino · 06:15 – 07:30", [
+    conContatti(duePrima("AZ 1162"), CONTATTO_DAVIDE),
+    BOARDING_PASS,
+  ]),
+  napoli: viaFco("AZ 1268 Napoli → Roma Fiumicino · 06:35 – 07:25", [
+    conContatti(duePrima("AZ 1268"), CONTATTO_DAVIDE),
+    BOARDING_PASS,
+  ]),
 
   // --- Solo rientro (arrivo a Parigi in autonomia, nessun volo di andata) ---
   "torino-ritorno": soloRientro(),
@@ -423,16 +435,18 @@ export function convocazioneToText(conv: Convocazione): string {
     out.push((conv.flightsLabel ?? "VOLO").toUpperCase(), ...conv.flights, "");
   }
   if (conv.call?.length) {
-    out.push("CONVOCAZIONE", ...conv.call, "");
-  }
-  if (conv.contacts?.length) {
-    out.push(
-      "ASSISTENZA",
-      ...conv.contacts.map(
-        (c) => `- ${c.name}: ${c.phone}${c.note ? ` (${c.note})` : ""}`
-      ),
-      ""
+    // I recapiti seguono la riga a cui si riferiscono, come nella card.
+    const righe = conv.call.flatMap((step) =>
+      typeof step === "string"
+        ? [step]
+        : [
+            step.text,
+            ...step.contacts.map(
+              (c) => `  ${c.name}: ${c.phone}${c.note ? ` (${c.note})` : ""}`
+            ),
+          ]
     );
+    out.push("CONVOCAZIONE", ...righe, "");
   }
   if (conv.baggage?.length) {
     out.push(

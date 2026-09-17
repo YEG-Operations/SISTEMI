@@ -386,8 +386,9 @@ export const SCENARIOS: Record<string, Scenario> = {
       "Brindisi (BDS)",
       "Roma Fiumicino (FCO)",
       "06:20",
-      // Il Word "Partenze del 20 sep BDS - FCO" riporta 07:25 (non 07:35).
-      "07:25"
+      // Il Word "Partenze del 20 sep BDS - FCO" riporta 07:25, ma l'operativo
+      // ITA dà 07:35: teniamo l'orario della compagnia.
+      "07:35"
     ),
     leg(
       "Ritorno",
