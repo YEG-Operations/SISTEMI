@@ -1,5 +1,5 @@
-import type { CallStep, Contact, Convocazione } from "@/lib/convocazioni";
-import { BAGGAGE_DISCLAIMER, PARKING_URL, giornate } from "@/lib/convocazioni";
+import type { CallStep, Contact, Convocazione, Giornata } from "@/lib/convocazioni";
+import { BAGGAGE_DISCLAIMER, PARKING_URL } from "@/lib/convocazioni";
 
 /** Card convocazione in stile "carta d'imbarco" brandizzata Sistemi. */
 export function ConvocazioneCard({ conv }: { conv: Convocazione }) {
@@ -18,7 +18,7 @@ export function ConvocazioneCard({ conv }: { conv: Convocazione }) {
             {/* Senza voli la data non avrebbe dove comparire (nelle altre
                 convocazioni sta sopra l'operativo): la mostriamo qui, sopra il
                 ritrovo in hotel. */}
-            {conv.dateLabel && !conv.flights ? (
+            {conv.dateLabel && !conv.flights && !conv.days ? (
               <p className="mb-2 text-sm font-bold text-sistemi-red">
                 {conv.dateLabel}
               </p>
@@ -27,82 +27,51 @@ export function ConvocazioneCard({ conv }: { conv: Convocazione }) {
           </Block>
         ) : null}
 
+        {/* Viaggio su più giorni: ogni giornata completa (volo e convocazione)
+            prima di passare alla successiva, così le due partenze non si
+            mescolano. */}
+        {conv.days?.length
+          ? conv.days.map((g, i) => (
+              <Giorno key={i} giornata={g} flightsLabel={conv.flightsLabel} />
+            ))
+          : null}
+
         {conv.flights ? (
           <Block label={conv.flightsLabel ?? "Volo"}>
-            {/* Una data in testa se la convocazione è di un giorno solo,
-                altrimenti ogni giornata porta la propria (vedi sotto). */}
             {conv.dateLabel ? (
               <p className="mb-2 text-sm font-bold text-sistemi-red">
                 {conv.dateLabel}
               </p>
             ) : null}
-            <div className="space-y-3">
-              {giornate(conv.flights).map((g, gi) => (
-                <div key={gi}>
-                  {g.date ? (
-                    <p className="mb-1.5 text-sm font-bold text-sistemi-red">
-                      {g.date}
-                    </p>
-                  ) : null}
-                  <ul className="space-y-1.5">
-                    {g.items.map((f, i) => (
-                      <li
-                        key={i}
-                        className="flex items-start gap-2 text-sm font-semibold leading-relaxed text-sistemi-ink"
-                      >
-                        <span aria-hidden className="pt-0.5 text-sistemi-red">
-                          ✈
-                        </span>
-                        <span>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
+            {listOfFlights(conv.flights)}
           </Block>
         ) : null}
 
         {conv.call ? (
-          <Block label="Convocazione">
-            <div className="space-y-3 text-sm leading-relaxed text-sistemi-ink">
-              {giornate(conv.call).map((g, gi) => (
-                <div key={gi}>
-                  {g.date ? (
-                    <p className="mb-1.5 text-sm font-bold text-sistemi-red">
-                      {g.date}
-                    </p>
-                  ) : null}
-                  <div className="space-y-2.5">
-                    {g.items.map((step, i) => (
-                      <Step key={i} step={step} />
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Block>
+          <Block label="Convocazione">{listOfSteps(conv.call)}</Block>
         ) : null}
 
+        {/* Franchigia e clausola obbligatoria vanno insieme: chi non vola (mezzi
+            propri) non ha né l'una né l'altra. */}
         {conv.baggage ? (
-          <Block label={conv.baggageLabel ?? "Franchigia bagaglio"}>
-            <ul className="space-y-1 text-sm leading-relaxed text-sistemi-ink">
-              {conv.baggage.map((item, i) => (
-                <li key={i} className="flex gap-1.5">
-                  <span aria-hidden className="text-sistemi-red">
-                    •
-                  </span>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </Block>
+          <>
+            <Block label={conv.baggageLabel ?? "Franchigia bagaglio"}>
+              <ul className="space-y-1 text-sm leading-relaxed text-sistemi-ink">
+                {conv.baggage.map((item, i) => (
+                  <li key={i} className="flex gap-1.5">
+                    <span aria-hidden className="text-sistemi-red">
+                      •
+                    </span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </Block>
+            <p className="rounded-xl bg-sistemi-mist px-4 py-3 text-xs italic leading-relaxed text-sistemi-ink/70">
+              {BAGGAGE_DISCLAIMER}
+            </p>
+          </>
         ) : null}
-
-        {/* Clausola obbligatoria: presente in TUTTE le convocazioni. */}
-        <p className="rounded-xl bg-sistemi-mist px-4 py-3 text-xs italic leading-relaxed text-sistemi-ink/70">
-          {BAGGAGE_DISCLAIMER}
-        </p>
 
         {conv.parking ? (
           <Block label="Parcheggio">
@@ -128,6 +97,55 @@ export function ConvocazioneCard({ conv }: { conv: Convocazione }) {
         ) : null}
       </div>
     </section>
+  );
+}
+
+/** Volo e convocazione di una singola giornata, con la data in testa. */
+function Giorno({
+  giornata,
+  flightsLabel,
+}: {
+  giornata: Giornata;
+  flightsLabel?: string;
+}) {
+  return (
+    <div className="space-y-4 border-l-2 border-sistemi-red/20 pl-4">
+      <p className="text-sm font-bold text-sistemi-red">{giornata.date}</p>
+      {giornata.flights?.length ? (
+        <Block label={flightsLabel ?? "Volo"}>{listOfFlights(giornata.flights)}</Block>
+      ) : null}
+      {giornata.call?.length ? (
+        <Block label="Convocazione">{listOfSteps(giornata.call)}</Block>
+      ) : null}
+    </div>
+  );
+}
+
+function listOfFlights(flights: string[]) {
+  return (
+    <ul className="space-y-1.5">
+      {flights.map((f, i) => (
+        <li
+          key={i}
+          className="flex items-start gap-2 text-sm font-semibold leading-relaxed text-sistemi-ink"
+        >
+          <span aria-hidden className="pt-0.5 text-sistemi-red">
+            ✈
+          </span>
+          <span>{f}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function listOfSteps(call: CallStep[]) {
+  return (
+    <div className="space-y-2.5 text-sm leading-relaxed text-sistemi-ink">
+      {call.map((step, i) => (
+        <Step key={i} step={step} />
+      ))}
+    </div>
   );
 }
 

@@ -56,6 +56,22 @@ const OVERRIDES: Record<string, string> = {
   "149556d2-c809-4470-b39e-e396c5178bd3": "torinos",
 };
 
+/**
+ * Partecipanti da escludere: non fanno più parte del viaggio (rinunce o
+ * cancellazioni). Restano elencati qui, e non semplicemente tolti dal JSON,
+ * perché altrimenti tornerebbero alla prima rigenerazione dall'Excel.
+ * Il loro link porta a /info come un id sconosciuto.
+ */
+const ESCLUSI: string[] = [
+  "0900f56c-812a-429e-b1b1-d73369b593b7", // era romas
+  "4c793e25-a3dd-4763-9254-691ae7847500", // era palermo
+  "f4a3db86-560b-428e-86a9-f9f06263be03", // era palermo
+  "2e6f0fe0-fb3d-4170-aaf8-356e9b5c1654", // era romas
+  "ca93bde0-599c-42e8-8260-710683c29536", // era romas
+  "9952bee3-b249-42c3-a6a6-2374f6ca5cf4", // era torino-ritorno-21:10
+  "eb4da38b-2645-4263-a4dc-6060d5a83c3e", // era milanos
+];
+
 /** Porta un valore "Viaggio" dell'Excel alla chiave scenario corretta. */
 function normalizeScenario(raw: string): string | null {
   const key = raw.trim().toLowerCase().replace(/\s+/g, "-");
@@ -128,8 +144,16 @@ function main() {
     console.log(`Override: ${id}  ${from} → ${scenario}`);
   }
 
+  // Toglie chi non partecipa più (vedi ESCLUSI).
+  for (const id of ESCLUSI) {
+    if (map[id]) {
+      console.log(`Escluso: ${id}  (era ${map[id]})`);
+      delete map[id];
+    }
+  }
+
   writeFileSync(OUT, JSON.stringify(map, null, 2) + "\n", "utf8");
-  console.log(`\nScritti ${count} id in ${OUT}.`);
+  console.log(`\nScritti ${Object.keys(map).length} id in ${OUT}.`);
 }
 
 main();

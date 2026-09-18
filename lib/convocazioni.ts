@@ -52,39 +52,25 @@ const conContatti = (text: string, ...contacts: Contact[]): CallStep => ({
 });
 
 /**
- * Gruppo di righe (voli o indicazioni) riferite a una singola data.
- * Serve a chi viaggia su due giorni — la bretella il 19, il volo per Parigi il
- * 20: un elenco unico mescolerebbe due convocazioni diverse.
+ * Una giornata di viaggio: il suo volo e la sua convocazione, in sequenza.
+ * Serve a chi parte su due giorni — la bretella il 19, il volo per Parigi il
+ * 20: tenere insieme tutti i voli e poi tutte le indicazioni costringerebbe a
+ * saltare avanti e indietro tra due date.
  */
-export type Giornata<T> = { date: string; items: T[] };
-
-/** Elenco piatto oppure diviso per giornata. */
-export type PerGiornata<T> = T[] | Giornata<T>[];
-
-/**
- * Normalizza un elenco in gruppi: se non è diviso per giornata restituisce un
- * unico gruppo senza intestazione, così chi renderizza ha una forma sola.
- */
-export function giornate<T>(list: PerGiornata<T> | undefined): Giornata<T>[] {
-  if (!list?.length) return [];
-  const first = list[0] as unknown;
-  const raggruppato =
-    typeof first === "object" &&
-    first !== null &&
-    Array.isArray((first as Giornata<T>).items);
-  return raggruppato ? (list as Giornata<T>[]) : [{ date: "", items: list as T[] }];
-}
+export type Giornata = { date: string; flights?: string[]; call?: CallStep[] };
 
 /** Blocco di una convocazione. Tutti i campi sono opzionali: si mostra solo ciò che serve. */
 export type Convocazione = {
   /** Data principale mostrata nella fascia della card (assente per chi non ha volo di andata). */
   dateLabel?: string;
-  /** Operativo/i di volo, una riga per tratta (o divisi per giornata). */
-  flights?: PerGiornata<string>;
+  /** Operativo/i di volo, una riga per tratta. */
+  flights?: string[];
   /** Etichetta della sezione voli (default "Volo"). */
   flightsLabel?: string;
-  /** Dove/quando presentarsi e altre indicazioni operative (o divise per giornata). */
-  call?: PerGiornata<CallStep>;
+  /** Dove/quando presentarsi e altre indicazioni operative. */
+  call?: CallStep[];
+  /** Viaggio su più giorni: volo e convocazione di ciascuno, in ordine. Alternativo a flights/call. */
+  days?: Giornata[];
   /** Informazioni hotel (per chi arriva in autonomia o ha solo il rientro). */
   hotel?: string[];
   /** Franchigia bagaglio. */
@@ -97,7 +83,11 @@ export type Convocazione = {
   notes?: string[];
 };
 
-/** Clausola obbligatoria aggiunta a TUTTE le convocazioni. */
+/**
+ * Clausola obbligatoria, presente in tutte le convocazioni che riguardano un
+ * volo. Chi raggiunge Parigi in auto non la vede: parla di bagaglio a mano da
+ * imbarcare in stiva.
+ */
 export const BAGGAGE_DISCLAIMER =
   "La compagnia aerea si riserva la facoltà di imbarcare in stiva il bagaglio a mano in base alla disponibilità di spazio a bordo.";
 
@@ -170,12 +160,16 @@ const FCO_TRANSITO: CallStep[] = [
   ),
 ];
 
-/** Referente per le partenze via FCO senza assistente in aeroporto di origine. */
-const CONTATTO_DAVIDE: Contact = {
+/**
+ * Riferimento di supporto per chi non ha un'assistente al banco del check-in.
+ * Sta sempre subito sotto la riga della boarding pass: chi non trova la carta
+ * d'imbarco in app è proprio chi ha bisogno di chiamare qualcuno.
+ */
+const DAVIDE: CallStep = conContatti("Contatto in caso di necessità:", {
   name: "Davide",
   phone: "+39 345 071 0247",
   note: ATTIVO_CONVOCAZIONE,
-};
+});
 
 // --- Builder per famiglie di scenari --------------------------------------
 
@@ -268,13 +262,15 @@ const ROMA_20: Convocazione = diretto(
   ]
 );
 
+// Partenza del 19 da Torino: il testo dà del "voi" (è una convocazione rivolta
+// al gruppo che parte insieme), a differenza delle altre che danno del "tu".
 const TORINO_19: Convocazione = diretto(
   SAB_19,
   "AF 1103 Torino → Parigi Charles de Gaulle · 10:20 – 11:50",
   [
-    `Presentati alle ore 08:15 direttamente ai banchi del check-in del volo, primo piano partenze, aeroporto di Torino, munito di ${DOC_ESPATRIO}.`,
+    `Presentatevi alle ore 08:15 direttamente ai banchi del check-in del volo, primo piano partenze, aeroporto di Torino, muniti di ${DOC_ESPATRIO}.`,
     conContatti(
-      "Al tuo arrivo al banco del check-in troverai Giada, che ti fornirà le carte di imbarco e il fast track.",
+      "Al vostro arrivo al banco del check-in troverete Giada, che vi fornirà le carte di imbarco e il fast track.",
       { name: "Giada", phone: "+39 340 051 3990", note: ATTIVA_CONVOCAZIONE }
     ),
   ]
@@ -286,6 +282,9 @@ export const CONVOCAZIONI: Record<string, Convocazione> = {
   torinos: TORINO_20,
   milanos: MILANO_20,
   romas: ROMA_20,
+  // Solo andata: la convocazione di partenza è identica a Milano/Roma. Andranno
+  // però scorporati quando arriveranno le convocazioni del rientro, che per
+  // loro non esiste.
   "milano-andata": MILANO_20,
   "roma-andata": ROMA_20,
   // Andata Torino 20 set (il rientro serale non cambia la convocazione di partenza).
@@ -317,6 +316,8 @@ export const CONVOCAZIONI: Record<string, Convocazione> = {
     call: [
       `Sei pregato di recarti in aeroporto a Cagliari due ore prima del decollo del volo, al banco check-in del volo, con ${DOC_ESPATRIO}.`,
       BOARDING_PASS,
+      // A Cagliari non c'è un'assistente al banco: il riferimento è Davide.
+      DAVIDE,
       conContatti(
         "Al tuo arrivo a Milano Linate, recupera il bagaglio e dirigiti verso l'uscita. Agli arrivi troverai Youstina, che ti accompagnerà ai banchi check-in del volo per Parigi e ti aiuterà nelle pratiche di check-in e di consegna del bagaglio.",
         { name: "Youstina", phone: "+39 380 349 1575", note: ATTIVA_MATTINO_20 }
@@ -328,29 +329,25 @@ export const CONVOCAZIONI: Record<string, Convocazione> = {
   // Bretella Cagliari → Linate anticipata al 19 settembre (scenario
   // `cagliari-19sep`): tra le due tratte c'è una notte, quindi non vale
   // l'assistenza agli arrivi di Linate prevista dallo scenario `cagliari`.
-  // Ogni tratta ha la sua data e la sua convocazione: il 19 a Cagliari (due ore
-  // prima del decollo), il 20 a Linate come per `milanos`.
-  // Voli e indicazioni sono divisi per giornata: le due tratte sono separate da
-  // una notte e hanno convocazioni diverse (Cagliari il 19, Linate il 20).
+  // Le due giornate si susseguono complete — volo e convocazione del 19, poi
+  // volo e convocazione del 20 — perché sono due partenze distinte: il 19 da
+  // Cagliari (due ore prima, senza assistente in loco), il 20 da Linate come
+  // per `milanos`.
   "cagliari-19sep": {
-    flights: [
-      { date: SAB_19, items: ["XZ 2354 Cagliari → Milano Linate · 08:00 – 09:20"] },
-      {
-        date: DOM_20,
-        items: ["AZ 312 Milano Linate → Parigi Charles de Gaulle · 14:25 – 16:00"],
-      },
-    ],
-    call: [
+    days: [
       {
         date: SAB_19,
-        items: [
+        flights: ["XZ 2354 Cagliari → Milano Linate · 08:00 – 09:20"],
+        call: [
           `Sei pregato di recarti in aeroporto a Cagliari due ore prima del decollo del volo, al banco check-in del volo, con ${DOC_ESPATRIO}.`,
           BOARDING_PASS,
+          DAVIDE,
         ],
       },
       {
         date: DOM_20,
-        items: [
+        flights: ["AZ 312 Milano Linate → Parigi Charles de Gaulle · 14:25 – 16:00"],
+        call: [
           `Presentati alle ore 12:00 direttamente ai banchi del check-in del volo ITA, area 1, primo piano partenze, aeroporto di Milano Linate, con ${DOC_ESPATRIO}.`,
           conContatti(
             "Al banco del check-in troverai le assistenti dedicate Youstina e Martina, che ti aiuteranno con le pratiche di check-in e la consegna del bagaglio.",
@@ -382,20 +379,24 @@ export const CONVOCAZIONI: Record<string, Convocazione> = {
   // Partenze senza assistente in aeroporto di origine: il riferimento per il
   // primo volo è Davide, le assistenti di Fiumicino rispondono solo al transito.
   bari: viaFco("AZ 1602 Bari → Roma Fiumicino · 06:30 – 07:40", [
-    conContatti(duePrima("AZ 1602"), CONTATTO_DAVIDE),
+    duePrima("AZ 1602"),
     BOARDING_PASS,
+    DAVIDE,
   ]),
   brindisi: viaFco("AZ 1620 Brindisi → Roma Fiumicino · 06:20 – 07:35", [
-    conContatti(duePrima("AZ 1620"), CONTATTO_DAVIDE),
+    duePrima("AZ 1620"),
     BOARDING_PASS,
+    DAVIDE,
   ]),
   lamezia: viaFco("AZ 1162 Lamezia Terme → Roma Fiumicino · 06:15 – 07:30", [
-    conContatti(duePrima("AZ 1162"), CONTATTO_DAVIDE),
+    duePrima("AZ 1162"),
     BOARDING_PASS,
+    DAVIDE,
   ]),
   napoli: viaFco("AZ 1268 Napoli → Roma Fiumicino · 06:35 – 07:25", [
-    conContatti(duePrima("AZ 1268"), CONTATTO_DAVIDE),
+    duePrima("AZ 1268"),
     BOARDING_PASS,
+    DAVIDE,
   ]),
 
   // --- Solo rientro (arrivo a Parigi in autonomia, nessun volo di andata) ---
@@ -405,6 +406,8 @@ export const CONVOCAZIONI: Record<string, Convocazione> = {
   "olbia-ritorno": soloRientro(),
 
   // --- Mezzi propri (posto auto riservato all'hotel) ---
+  // Nessun volo e nessun bagaglio: la clausola sul bagaglio a mano imbarcato in
+  // stiva non ha senso per chi raggiunge Parigi in auto (vedi BAGGAGE_DISCLAIMER).
   "mezzi-propri": {
     dateLabel: DOM_20,
     hotel: [
@@ -480,30 +483,33 @@ export function convocazioneToText(conv: Convocazione): string {
   if (conv.hotel?.length) {
     out.push("RITROVO", ...conv.hotel, "");
   }
-  // Le sezioni divise per giornata riportano la data prima delle loro righe.
-  const conDate = <T,>(list: PerGiornata<T> | undefined, righe: (item: T) => string[]) =>
-    giornate(list).flatMap((g, i) => [
-      ...(g.date ? [...(i > 0 ? [""] : []), g.date] : []),
-      ...g.items.flatMap(righe),
-    ]);
-
-  const voli = conDate(conv.flights, (f) => [f]);
-  if (voli.length) {
-    out.push((conv.flightsLabel ?? "VOLO").toUpperCase(), ...voli, "");
-  }
   // I recapiti seguono la riga a cui si riferiscono, come nella card.
-  const righeCall = conDate(conv.call, (step) =>
-    typeof step === "string"
-      ? [step]
-      : [
-          step.text,
-          ...(step.contacts ?? []).map(
-            (c) => `  ${c.name}: ${c.phone}${c.note ? ` (${c.note})` : ""}`
-          ),
-        ]
-  );
-  if (righeCall.length) {
-    out.push("CONVOCAZIONE", ...righeCall, "");
+  const righeCall = (call: CallStep[]) =>
+    call.flatMap((step) =>
+      typeof step === "string"
+        ? [step]
+        : [
+            step.text,
+            ...(step.contacts ?? []).map(
+              (c) => `  ${c.name}: ${c.phone}${c.note ? ` (${c.note})` : ""}`
+            ),
+          ]
+    );
+  const sezioniVolo = (g: { flights?: string[]; call?: CallStep[] }) => {
+    if (g.flights?.length) {
+      out.push((conv.flightsLabel ?? "VOLO").toUpperCase(), ...g.flights, "");
+    }
+    if (g.call?.length) out.push("CONVOCAZIONE", ...righeCall(g.call), "");
+  };
+
+  if (conv.days?.length) {
+    // Viaggio su più giorni: ogni giornata con il suo volo e la sua convocazione.
+    for (const g of conv.days) {
+      out.push(g.date.toUpperCase(), "");
+      sezioniVolo(g);
+    }
+  } else {
+    sezioniVolo(conv);
   }
   if (conv.baggage?.length) {
     out.push(
@@ -511,8 +517,8 @@ export function convocazioneToText(conv: Convocazione): string {
       ...conv.baggage.map((b) => `- ${b}`),
       ""
     );
+    out.push(BAGGAGE_DISCLAIMER, "");
   }
-  out.push(BAGGAGE_DISCLAIMER, "");
   if (conv.parking) {
     out.push(
       "PARCHEGGIO",
