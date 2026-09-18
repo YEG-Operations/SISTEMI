@@ -34,10 +34,9 @@ const OVERRIDES: Record<string, string> = {
   // Spostati da romas a catania (richiesta manuale).
   "4db002a3-9001-4dda-9e01-8d6382c7a993": "catania",
   "658b22cd-d955-477b-8b7e-04bf79831523": "catania",
-  // torino-17-24sep — id forniti manualmente (non presenti nel file Cvent).
-  // Elena Baudino, Silvia Bagnasacco.
-  "9c1bd2c9-b306-43a9-b755-28189d5b580a": "torino-17-24sep",
-  "3d8fcae5-02ea-4b9a-a2dc-65696b78b73e": "torino-17-24sep",
+  // Elena Baudino e Silvia Bagnasacco erano forzate su torino-17-24sep, ma il
+  // loro viaggio è quello del file Cvent: partenza del 18 settembre, come
+  // Alessia Girardi. L'override è stato tolto perché rimetteva il 17.
   // torino-19-24sep — id forniti manualmente (non presenti nel file Cvent).
   // Flavia Giuliana Brero, Lidia Brero.
   "4eb0afca-7a03-436b-8bf2-94aece1d04a5": "torino-19-24sep",
@@ -70,6 +69,7 @@ const ESCLUSI: string[] = [
   "ca93bde0-599c-42e8-8260-710683c29536", // era romas
   "9952bee3-b249-42c3-a6a6-2374f6ca5cf4", // era torino-ritorno-21:10
   "eb4da38b-2645-4263-a4dc-6060d5a83c3e", // era milanos
+  "0c712775-5d6c-4884-ad07-56620459c8c3", // era torino-19-24sep
 ];
 
 /** Porta un valore "Viaggio" dell'Excel alla chiave scenario corretta. */
