@@ -1,5 +1,5 @@
-import type { Convocazione } from "@/lib/convocazioni";
-import { BAGGAGE_DISCLAIMER, PARKING_URL } from "@/lib/convocazioni";
+import type { CallStep, Contact, Convocazione } from "@/lib/convocazioni";
+import { BAGGAGE_DISCLAIMER, PARKING_URL, giornate } from "@/lib/convocazioni";
 
 /** Card convocazione in stile "carta d'imbarco" brandizzata Sistemi. */
 export function ConvocazioneCard({ conv }: { conv: Convocazione }) {
@@ -29,62 +29,57 @@ export function ConvocazioneCard({ conv }: { conv: Convocazione }) {
 
         {conv.flights ? (
           <Block label={conv.flightsLabel ?? "Volo"}>
+            {/* Una data in testa se la convocazione è di un giorno solo,
+                altrimenti ogni giornata porta la propria (vedi sotto). */}
             {conv.dateLabel ? (
               <p className="mb-2 text-sm font-bold text-sistemi-red">
                 {conv.dateLabel}
               </p>
             ) : null}
-            <ul className="space-y-1.5">
-              {conv.flights.map((f, i) => (
-                <li
-                  key={i}
-                  className="flex items-start gap-2 text-sm font-semibold leading-relaxed text-sistemi-ink"
-                >
-                  <span aria-hidden className="pt-0.5 text-sistemi-red">
-                    ✈
-                  </span>
-                  <span>{f}</span>
-                </li>
+            <div className="space-y-3">
+              {giornate(conv.flights).map((g, gi) => (
+                <div key={gi}>
+                  {g.date ? (
+                    <p className="mb-1.5 text-sm font-bold text-sistemi-red">
+                      {g.date}
+                    </p>
+                  ) : null}
+                  <ul className="space-y-1.5">
+                    {g.items.map((f, i) => (
+                      <li
+                        key={i}
+                        className="flex items-start gap-2 text-sm font-semibold leading-relaxed text-sistemi-ink"
+                      >
+                        <span aria-hidden className="pt-0.5 text-sistemi-red">
+                          ✈
+                        </span>
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
-            </ul>
+            </div>
           </Block>
         ) : null}
 
         {conv.call ? (
           <Block label="Convocazione">
-            <div className="space-y-2.5 text-sm leading-relaxed text-sistemi-ink">
-              {conv.call.map((step, i) =>
-                typeof step === "string" ? (
-                  <p key={i}>{withBoldTimes(step)}</p>
-                ) : (
-                  <div key={i} className="space-y-1.5">
-                    <p>{withBoldTimes(step.text)}</p>
-                    {/* I recapiti stanno sotto la riga a cui si riferiscono:
-                        in più tratte le assistenze sono diverse. */}
-                    <ul className="space-y-1 border-l-2 border-sistemi-red/30 pl-3">
-                      {step.contacts.map((c) => (
-                        <li
-                          key={c.phone}
-                          className="flex flex-wrap items-baseline gap-x-2"
-                        >
-                          <span className="font-semibold">{c.name}</span>
-                          <a
-                            href={`tel:${c.phone.replace(/[^+\d]/g, "")}`}
-                            className="font-bold text-sistemi-red underline underline-offset-2"
-                          >
-                            {c.phone}
-                          </a>
-                          {c.note ? (
-                            <span className="text-xs text-sistemi-ink/60">
-                              ({c.note})
-                            </span>
-                          ) : null}
-                        </li>
-                      ))}
-                    </ul>
+            <div className="space-y-3 text-sm leading-relaxed text-sistemi-ink">
+              {giornate(conv.call).map((g, gi) => (
+                <div key={gi}>
+                  {g.date ? (
+                    <p className="mb-1.5 text-sm font-bold text-sistemi-red">
+                      {g.date}
+                    </p>
+                  ) : null}
+                  <div className="space-y-2.5">
+                    {g.items.map((step, i) => (
+                      <Step key={i} step={step} />
+                    ))}
                   </div>
-                )
-              )}
+                </div>
+              ))}
             </div>
           </Block>
         ) : null}
@@ -133,6 +128,51 @@ export function ConvocazioneCard({ conv }: { conv: Convocazione }) {
         ) : null}
       </div>
     </section>
+  );
+}
+
+/** Una riga di convocazione: testo (eventualmente in evidenza) e suoi recapiti. */
+function Step({ step }: { step: CallStep }) {
+  if (typeof step === "string") return <p>{withBoldTimes(step)}</p>;
+  const testo = step.bold ? (
+    <strong className="font-bold">{step.text}</strong>
+  ) : (
+    withBoldTimes(step.text)
+  );
+  if (!step.contacts?.length) return <p>{testo}</p>;
+  return (
+    <div className="space-y-1.5">
+      <p>{testo}</p>
+      {/* I recapiti stanno sotto la riga a cui si riferiscono: in più tratte
+          le assistenze sono diverse. */}
+      <ul className="space-y-1 border-l-2 border-sistemi-red/30 pl-3">
+        {step.contacts.map((c) => (
+          <ContactLine key={c.phone} contact={c} />
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/**
+ * Nome, numero cliccabile e nota di attivazione sulla stessa riga: la nota va
+ * a capo solo quando lo spazio finisce, quindi è testo in linea e non un
+ * elemento flex (che andrebbe a capo tutto intero a prescindere).
+ */
+function ContactLine({ contact: c }: { contact: Contact }) {
+  return (
+    <li>
+      <span className="font-semibold">{c.name}</span>{" "}
+      <a
+        href={`tel:${c.phone.replace(/[^+\d]/g, "")}`}
+        className="whitespace-nowrap font-bold text-sistemi-red underline underline-offset-2"
+      >
+        {c.phone}
+      </a>
+      {c.note ? (
+        <span className="text-xs text-sistemi-ink/60"> ({c.note})</span>
+      ) : null}
+    </li>
   );
 }
 

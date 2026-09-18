@@ -35,7 +35,15 @@ export type Contact = {
  * diverse (es. un referente per il primo volo, altre solo al transito di
  * Fiumicino) e un elenco unico in coda non direbbe chi chiamare e quando.
  */
-export type CallStep = string | { text: string; contacts: Contact[] };
+export type CallStep =
+  | string
+  | {
+      text: string;
+      /** Recapiti validi per questa riga (e solo per questa). */
+      contacts?: Contact[];
+      /** Riga da evidenziare per intero (es. la boarding pass in app). */
+      bold?: boolean;
+    };
 
 /** Riga di convocazione con i relativi recapiti di assistenza. */
 const conContatti = (text: string, ...contacts: Contact[]): CallStep => ({
@@ -43,16 +51,40 @@ const conContatti = (text: string, ...contacts: Contact[]): CallStep => ({
   contacts,
 });
 
+/**
+ * Gruppo di righe (voli o indicazioni) riferite a una singola data.
+ * Serve a chi viaggia su due giorni — la bretella il 19, il volo per Parigi il
+ * 20: un elenco unico mescolerebbe due convocazioni diverse.
+ */
+export type Giornata<T> = { date: string; items: T[] };
+
+/** Elenco piatto oppure diviso per giornata. */
+export type PerGiornata<T> = T[] | Giornata<T>[];
+
+/**
+ * Normalizza un elenco in gruppi: se non è diviso per giornata restituisce un
+ * unico gruppo senza intestazione, così chi renderizza ha una forma sola.
+ */
+export function giornate<T>(list: PerGiornata<T> | undefined): Giornata<T>[] {
+  if (!list?.length) return [];
+  const first = list[0] as unknown;
+  const raggruppato =
+    typeof first === "object" &&
+    first !== null &&
+    Array.isArray((first as Giornata<T>).items);
+  return raggruppato ? (list as Giornata<T>[]) : [{ date: "", items: list as T[] }];
+}
+
 /** Blocco di una convocazione. Tutti i campi sono opzionali: si mostra solo ciò che serve. */
 export type Convocazione = {
   /** Data principale mostrata nella fascia della card (assente per chi non ha volo di andata). */
   dateLabel?: string;
-  /** Operativo/i di volo, una riga per tratta. */
-  flights?: string[];
+  /** Operativo/i di volo, una riga per tratta (o divisi per giornata). */
+  flights?: PerGiornata<string>;
   /** Etichetta della sezione voli (default "Volo"). */
   flightsLabel?: string;
-  /** Dove/quando presentarsi e altre indicazioni operative. */
-  call?: CallStep[];
+  /** Dove/quando presentarsi e altre indicazioni operative (o divise per giornata). */
+  call?: PerGiornata<CallStep>;
   /** Informazioni hotel (per chi arriva in autonomia o ha solo il rientro). */
   hotel?: string[];
   /** Franchigia bagaglio. */
@@ -98,9 +130,12 @@ const NOTE_FUTURE =
 /**
  * Boarding pass in app: presente nei Word delle partenze in cui il check-in è
  * già stato fatto dall'organizzazione (via Roma FCO e Cagliari).
+ * Evidenziata: è l'unica riga che richiede un'azione prima di partire.
  */
-const BOARDING_PASS =
-  'La tua boarding pass è disponibile nella sezione dedicata "Boarding Pass", all\'interno di questa app.';
+const BOARDING_PASS: CallStep = {
+  text: 'La tua boarding pass è disponibile nella sezione dedicata "Boarding Pass", all\'interno di questa app.',
+  bold: true,
+};
 
 const DOC_ESPATRIO = "un documento di identità in corso di validità e valido per l'espatrio";
 
@@ -295,21 +330,35 @@ export const CONVOCAZIONI: Record<string, Convocazione> = {
   // l'assistenza agli arrivi di Linate prevista dallo scenario `cagliari`.
   // Ogni tratta ha la sua data e la sua convocazione: il 19 a Cagliari (due ore
   // prima del decollo), il 20 a Linate come per `milanos`.
+  // Voli e indicazioni sono divisi per giornata: le due tratte sono separate da
+  // una notte e hanno convocazioni diverse (Cagliari il 19, Linate il 20).
   "cagliari-19sep": {
-    dateLabel: "Sabato 19 e domenica 20 settembre 2026",
     flights: [
-      "Sabato 19 settembre · XZ 2354 Cagliari → Milano Linate · 08:00 – 09:20",
-      "Domenica 20 settembre · AZ 312 Milano Linate → Parigi Charles de Gaulle · 14:25 – 16:00",
+      { date: SAB_19, items: ["XZ 2354 Cagliari → Milano Linate · 08:00 – 09:20"] },
+      {
+        date: DOM_20,
+        items: ["AZ 312 Milano Linate → Parigi Charles de Gaulle · 14:25 – 16:00"],
+      },
     ],
     call: [
-      `Sabato 19 settembre — Sei pregato di recarti in aeroporto a Cagliari due ore prima del decollo del volo, al banco check-in del volo, con ${DOC_ESPATRIO}.`,
-      BOARDING_PASS,
-      `Domenica 20 settembre — Presentati alle ore 12:00 direttamente ai banchi del check-in del volo ITA, area 1, primo piano partenze, aeroporto di Milano Linate, con ${DOC_ESPATRIO}.`,
-      conContatti(
-        "Al banco del check-in troverai le assistenti dedicate Youstina e Martina, che ti aiuteranno con le pratiche di check-in e la consegna del bagaglio.",
-        { name: "Youstina", phone: "+39 380 349 1575", note: ATTIVA_CONVOCAZIONE },
-        { name: "Martina", phone: "+39 329 229 8549", note: ATTIVA_CONVOCAZIONE }
-      ),
+      {
+        date: SAB_19,
+        items: [
+          `Sei pregato di recarti in aeroporto a Cagliari due ore prima del decollo del volo, al banco check-in del volo, con ${DOC_ESPATRIO}.`,
+          BOARDING_PASS,
+        ],
+      },
+      {
+        date: DOM_20,
+        items: [
+          `Presentati alle ore 12:00 direttamente ai banchi del check-in del volo ITA, area 1, primo piano partenze, aeroporto di Milano Linate, con ${DOC_ESPATRIO}.`,
+          conContatti(
+            "Al banco del check-in troverai le assistenti dedicate Youstina e Martina, che ti aiuteranno con le pratiche di check-in e la consegna del bagaglio.",
+            { name: "Youstina", phone: "+39 380 349 1575", note: ATTIVA_CONVOCAZIONE },
+            { name: "Martina", phone: "+39 329 229 8549", note: ATTIVA_CONVOCAZIONE }
+          ),
+        ],
+      },
     ],
     baggage: BAGGAGE_STD,
     parking: true,
@@ -431,22 +480,30 @@ export function convocazioneToText(conv: Convocazione): string {
   if (conv.hotel?.length) {
     out.push("RITROVO", ...conv.hotel, "");
   }
-  if (conv.flights?.length) {
-    out.push((conv.flightsLabel ?? "VOLO").toUpperCase(), ...conv.flights, "");
+  // Le sezioni divise per giornata riportano la data prima delle loro righe.
+  const conDate = <T,>(list: PerGiornata<T> | undefined, righe: (item: T) => string[]) =>
+    giornate(list).flatMap((g, i) => [
+      ...(g.date ? [...(i > 0 ? [""] : []), g.date] : []),
+      ...g.items.flatMap(righe),
+    ]);
+
+  const voli = conDate(conv.flights, (f) => [f]);
+  if (voli.length) {
+    out.push((conv.flightsLabel ?? "VOLO").toUpperCase(), ...voli, "");
   }
-  if (conv.call?.length) {
-    // I recapiti seguono la riga a cui si riferiscono, come nella card.
-    const righe = conv.call.flatMap((step) =>
-      typeof step === "string"
-        ? [step]
-        : [
-            step.text,
-            ...step.contacts.map(
-              (c) => `  ${c.name}: ${c.phone}${c.note ? ` (${c.note})` : ""}`
-            ),
-          ]
-    );
-    out.push("CONVOCAZIONE", ...righe, "");
+  // I recapiti seguono la riga a cui si riferiscono, come nella card.
+  const righeCall = conDate(conv.call, (step) =>
+    typeof step === "string"
+      ? [step]
+      : [
+          step.text,
+          ...(step.contacts ?? []).map(
+            (c) => `  ${c.name}: ${c.phone}${c.note ? ` (${c.note})` : ""}`
+          ),
+        ]
+  );
+  if (righeCall.length) {
+    out.push("CONVOCAZIONE", ...righeCall, "");
   }
   if (conv.baggage?.length) {
     out.push(
