@@ -7,9 +7,16 @@
  *   2) altrimenti per tipologia di viaggio (chiave scenario), come per il
  *      piano viaggi in lib/scenarios.ts.
  *
- * Fonte: i file Word nella cartella /convocazioni. Gli orari dei voli mostrati
- * sono allineati a lib/scenarios.ts (le stesse tratte che il partecipante vede
- * nelle card del piano viaggi) per non generare incoerenze sul sito.
+ * ── Stato attuale: RIENTRO DEL 23 SETTEMBRE ──────────────────────────────
+ * Le convocazioni di partenza (20 settembre e date anticipate) hanno esaurito
+ * il loro scopo e sono state sostituite da quella del rientro. La struttura è
+ * la stessa per tutti:
+ *   check-out → orario di partenza dalla lobby → volo di rientro →
+ *   check-in in aeroporto (+ eventuale assistenza allo scalo) → franchigia.
+ * Cambia solo la parte dinamica: l'orario della lobby e l'operativo di volo.
+ *
+ * Gli orari dei voli sono allineati a lib/scenarios.ts (le stesse tratte che il
+ * partecipante vede nelle card del piano viaggi) per non generare incoerenze.
  *
  * In ogni convocazione è aggiunta, in fondo, la clausola richiesta:
  *   "La compagnia aerea si riserva la facoltà di imbarcare in stiva il bagaglio
@@ -31,9 +38,9 @@ export type Contact = {
 
 /**
  * Riga di convocazione. I contatti stanno attaccati alla riga a cui si
- * riferiscono e non in fondo alla card: in più tratte le assistenze sono
- * diverse (es. un referente per il primo volo, altre solo al transito di
- * Fiumicino) e un elenco unico in coda non direbbe chi chiamare e quando.
+ * riferiscono e non in fondo alla card: le assistenze non valgono per l'intero
+ * viaggio (quella di Fiumicino risponde solo allo scalo) e un elenco unico in
+ * coda non direbbe chi chiamare e quando.
  */
 export type CallStep =
   | string
@@ -51,372 +58,185 @@ const conContatti = (text: string, ...contacts: Contact[]): CallStep => ({
   contacts,
 });
 
-/**
- * Una giornata di viaggio: il suo volo e la sua convocazione, in sequenza.
- * Serve a chi parte su due giorni — la bretella il 19, il volo per Parigi il
- * 20: tenere insieme tutti i voli e poi tutte le indicazioni costringerebbe a
- * saltare avanti e indietro tra due date.
- */
-export type Giornata = { date: string; flights?: string[]; call?: CallStep[] };
-
 /** Blocco di una convocazione. Tutti i campi sono opzionali: si mostra solo ciò che serve. */
 export type Convocazione = {
-  /** Data principale mostrata nella fascia della card (assente per chi non ha volo di andata). */
+  /** Data mostrata sopra l'operativo di volo. */
   dateLabel?: string;
+  /** Indicazioni che precedono il volo (check-out, partenza dalla lobby). */
+  call?: CallStep[];
   /** Operativo/i di volo, una riga per tratta. */
   flights?: string[];
   /** Etichetta della sezione voli (default "Volo"). */
   flightsLabel?: string;
-  /** Dove/quando presentarsi e altre indicazioni operative. */
-  call?: CallStep[];
-  /** Viaggio su più giorni: volo e convocazione di ciascuno, in ordine. Alternativo a flights/call. */
-  days?: Giornata[];
-  /** Informazioni hotel (per chi arriva in autonomia o ha solo il rientro). */
-  hotel?: string[];
+  /**
+   * Indicazioni che seguono l'operativo (check-in, assistenza allo scalo).
+   * Stanno dopo il volo perché vi si riferiscono: anticiparle sopra
+   * costringerebbe a leggere "una volta sbarcato" prima di sapere dove si va.
+   */
+  airport?: CallStep[];
+  /** Etichetta della sezione post-volo (default "In aeroporto"). */
+  airportLabel?: string;
   /** Franchigia bagaglio. */
   baggage?: string[];
   /** Etichetta della sezione bagaglio (default "Franchigia bagaglio"). */
   baggageLabel?: string;
-  /** Mostra il blocco parcheggio convenzionato. */
-  parking?: boolean;
   /** Note finali (es. "ulteriori dettagli verranno comunicati…"). */
   notes?: string[];
 };
 
 /**
  * Clausola obbligatoria, presente in tutte le convocazioni che riguardano un
- * volo. Chi raggiunge Parigi in auto non la vede: parla di bagaglio a mano da
+ * volo. Chi non vola con noi non la vede: parla di bagaglio a mano da
  * imbarcare in stiva.
  */
 export const BAGGAGE_DISCLAIMER =
   "La compagnia aerea si riserva la facoltà di imbarcare in stiva il bagaglio a mano in base alla disponibilità di spazio a bordo.";
 
-/** Link parcheggio convenzionato (comune a tutte le convocazioni con parcheggio). */
-export const PARKING_URL =
-  "https://www.parkingo.com/it/prenotazione-parcheggio-yeg-ventana-group";
-
 // --- Costanti di testo riutilizzabili -------------------------------------
 
-const DOM_20 = "Domenica 20 settembre 2026";
-const VEN_18 = "Venerdì 18 settembre 2026";
-const SAB_19 = "Sabato 19 settembre 2026";
+const MER_23 = "Mercoledì 23 settembre 2026";
+/** Chi ha prolungato di una notte rientra il giorno dopo, stesso operativo. */
+const GIO_24 = "Giovedì 24 settembre 2026";
 
 const BAGGAGE_STD = [
-  "1 bagaglio da stiva 23 kg",
+  "1 bagaglio da stiva da 23 kg",
   "1 bagaglio a mano (massimo 8 kg, dimensioni 55×35×25 cm) più un accessorio personale (45×36×20 cm) da riporre sotto il sedile",
 ];
 
-const HOTEL = [
-  "Ti aspettiamo presso l'Hotel Du Collectionneur a partire dalle ore 16:00.",
-  "Hotel Du Collectionneur — 51-57 Rue de Courcelles, 75008 Paris",
+/**
+ * Apertura uguale per tutti: il check-out non dipende dall'orario del volo, ma
+ * dall'orario di rilascio delle camere.
+ */
+const CHECKOUT: CallStep[] = [
+  "Ti ricordiamo di effettuare il check-out prima della partenza dell'attività scelta e comunque entro le ore 12:00, provvedendo a saldare eventuali extra al momento del check-out della camera.",
+  "È stato previsto per te un deposito bagagli in hotel.",
 ];
 
-const DOC_REMINDER =
-  "Ti ricordiamo di voler portare con te un documento di identità in corso di validità e valido per l'espatrio.";
+/**
+ * Unica riga davvero dinamica della convocazione: il gruppo di appartenenza si
+ * riconosce dall'orario di partenza dalla lobby.
+ */
+const lobby = (ora: string): CallStep =>
+  `Partenza dalla lobby dell'hotel alle ore ${ora}`;
 
-const NOTE_FUTURE =
-  "Ulteriori dettagli e i contatti delle assistenti verranno comunicati nei prossimi giorni.";
+/** Check-in del rientro: uguale per tutti, nessuno ha la carta già emessa. */
+const CHECKIN =
+  "Il check-in verrà effettuato in aeroporto ai banchi della compagnia.";
 
 /**
- * Boarding pass in app: presente nei Word delle partenze in cui il check-in è
- * già stato fatto dall'organizzazione (via Roma FCO e Cagliari).
- * Evidenziata: è l'unica riga che richiede un'azione prima di partire.
+ * Scalo di Roma Fiumicino (bretellati): l'assistenza aeroportuale accoglie
+ * all'arrivo del volo da Parigi e accompagna alla coincidenza.
  */
-const BOARDING_PASS: CallStep = {
-  text: 'La tua boarding pass è disponibile nella sezione dedicata "Boarding Pass", all\'interno di questa app.',
+const SCALO_FCO: CallStep = conContatti(
+  "Una volta sbarcato dal volo a Roma Fiumicino, troverai ad attenderti l'assistenza aeroportuale.",
+  { name: "Assistenza transiti", phone: "+39 335 779 1234" }
+);
+
+/**
+ * Scalo di Milano Linate (Cagliari e Olbia): a differenza di Fiumicino non c'è
+ * assistenza in loco, il bagaglio va ritirato e reimbarcato. La riga è
+ * evidenziata perché richiede un'azione: recuperare la boarding pass in app.
+ */
+const SCALO_LIN: CallStep = {
+  text: 'Una volta atterrato a Milano Linate, dovrai ritirare il tuo bagaglio e recarti al banco check-in della compagnia per proseguire il tuo viaggio; trovi la boarding pass nella sezione dedicata "Boarding Pass" all\'interno di questa app.',
   bold: true,
 };
 
-const DOC_ESPATRIO = "un documento di identità in corso di validità e valido per l'espatrio";
+// --- Operativi di rientro (allineati a lib/scenarios.ts) -------------------
 
-const ATTIVO_CONVOCAZIONE = "attivo dall'ora di convocazione";
-const ATTIVA_CONVOCAZIONE = "attiva dall'ora di convocazione";
-const ATTIVA_MATTINO_20 = "attiva dal mattino del 20 settembre";
+const AF_1702 = "AF 1702 Parigi Charles de Gaulle → Torino · 15:40 – 17:05";
+const AZ_313 = "AZ 313 Parigi Charles de Gaulle → Milano Linate · 16:50 – 18:20";
+const AZ_325 = "AZ 325 Parigi Charles de Gaulle → Roma Fiumicino · 18:15 – 20:25";
+const AF_1502 = "AF 1502 Parigi Charles de Gaulle → Torino · 21:10 – 22:35";
 
-/** Presentazione al check-in "due ore prima" per un volo specifico. */
-const duePrima = (volo: string) =>
-  `Sei pregato di presentarti al banco check-in del volo ${volo} due ore prima dell'orario di decollo, munito di ${DOC_ESPATRIO}.`;
-
-/** Presentazione al check-in a un orario preciso per un volo specifico. */
-const allOra = (volo: string, ora: string) =>
-  `Sei pregato di presentarti al banco check-in del volo ${volo} alle ore ${ora}, munito di ${DOC_ESPATRIO}.`;
-
-/** Assistenti al transito di Roma Fiumicino: identiche per tutte le partenze via FCO. */
-const CONTATTI_TRANSITO_FCO: Contact[] = [
-  { name: "Assistenza ai transiti", phone: "+39 335 779 1234", note: ATTIVA_MATTINO_20 },
-  { name: "Alessandra", phone: "+39 338 844 6639", note: ATTIVA_MATTINO_20 },
-];
+// --- Builder ---------------------------------------------------------------
 
 /**
- * Transito a Roma Fiumicino: bagaglio spedito a Parigi e meeting point
- * Feltrinelli. I recapiti delle assistenti stanno su questa riga perché
- * rispondono solo per il transito, non per il volo di partenza.
+ * Convocazione di rientro: cambia solo l'orario della lobby, l'operativo e
+ * l'eventuale indicazione di scalo. Tutto il resto è identico per tutti.
+ * La data è il 23 per tutti tranne chi ha prolungato di una notte.
  */
-const FCO_TRANSITO: CallStep[] = [
-  "Il tuo bagaglio verrà spedito direttamente all'aeroporto di Parigi Charles de Gaulle.",
-  conContatti(
-    "Una volta arrivato a Roma Fiumicino, recati al meeting point della Libreria Feltrinelli in area transiti, ad inizio corridoio gates voli ITA (Terminal T1), dove troverai le nostre assistenti dedicate che ti daranno indicazioni sul volo per Parigi.",
-    ...CONTATTI_TRANSITO_FCO
-  ),
-];
-
-/**
- * Riferimento di supporto per chi non ha un'assistente al banco del check-in.
- * Sta sempre subito sotto la riga della boarding pass: chi non trova la carta
- * d'imbarco in app è proprio chi ha bisogno di chiamare qualcuno.
- */
-const DAVIDE: CallStep = conContatti("Contatto in caso di necessità:", {
-  name: "Davide",
-  phone: "+39 345 071 0247",
-  note: ATTIVO_CONVOCAZIONE,
-});
-
-// --- Builder per famiglie di scenari --------------------------------------
-
-/** Convocazione con volo diretto da un aeroporto italiano (Torino / Milano / Roma). */
-function diretto(
-  dateLabel: string,
-  flight: string,
-  call: CallStep[],
-  notes: string[] = []
+function rientro(
+  lobbyOra: string,
+  flights: string[],
+  scalo: CallStep[] = [],
+  date: string = MER_23
 ): Convocazione {
   return {
-    dateLabel,
-    flights: [flight],
-    call,
+    dateLabel: date,
+    call: [...CHECKOUT, lobby(lobbyOra)],
+    flightsLabel: "Volo di rientro",
+    flights,
+    airport: [CHECKIN, ...scalo],
     baggage: BAGGAGE_STD,
-    parking: true,
-    notes,
   };
 }
 
-/**
- * Convocazione con volo di avvicinamento verso Roma FCO e poi Parigi.
- * `apertura` sono le righe specifiche dell'aeroporto di partenza (orario di
- * presentazione ed eventuale assistente in loco); il transito a Fiumicino è
- * identico per tutti.
- */
-function viaFco(localLeg: string, apertura: CallStep[]): Convocazione {
-  return {
-    dateLabel: DOM_20,
-    flights: [localLeg, "AZ 318 Roma Fiumicino → Parigi Charles de Gaulle · 11:00 – 13:15"],
-    call: [...apertura, ...FCO_TRANSITO],
-    baggage: BAGGAGE_STD,
-    parking: true,
-  };
-}
+/** Rientro via Roma Fiumicino: volo Parigi → FCO e proseguimento locale. */
+const viaFco = (proseguimento: string): Convocazione =>
+  rientro("14:45", [AZ_325, proseguimento], [SCALO_FCO]);
 
-/**
- * Convocazione per chi arriva a Parigi in autonomia (nessun volo di andata).
- * Non mostra il volo di rientro, né il parcheggio: restano nel piano viaggi.
- * La data è quella del ritrovo in hotel (domenica 20), non quella del rientro.
- */
-function soloRientro(): Convocazione {
-  return {
-    dateLabel: DOM_20,
-    hotel: HOTEL,
-    call: [DOC_REMINDER],
-    baggageLabel: "Franchigia bagaglio volo di rientro",
-    baggage: BAGGAGE_STD,
-    notes: [NOTE_FUTURE],
-  };
-}
+/** Chi rientra per conto proprio: nessuna indicazione, solo il saluto. */
+const SALUTO: Convocazione = { call: ["Buon proseguimento!"] };
+
+/** Chi prosegue il soggiorno a Parigi. */
+const RESTA_A_PARIGI: Convocazione = { call: ["Buon proseguimento a Parigi!"] };
 
 // --- Convocazioni per tipologia di viaggio (chiave scenario) ---------------
 
-const TORINO_20: Convocazione = diretto(
-  DOM_20,
-  "AF 1103 Torino → Parigi Charles de Gaulle · 10:20 – 11:50",
-  [
-    `Presentati alle ore 07:50 direttamente ai banchi del check-in del volo, primo piano partenze, aeroporto di Torino, con ${DOC_ESPATRIO}.`,
-    conContatti(
-      "Al banco del check-in troverai le assistenti dedicate Giada e Andreana, che ti aiuteranno con le pratiche di check-in e la consegna del bagaglio.",
-      { name: "Giada", phone: "+39 340 051 3990", note: ATTIVA_CONVOCAZIONE },
-      { name: "Andreana", phone: "+39 335 693 2876", note: ATTIVA_CONVOCAZIONE }
-    ),
-  ]
-);
-
-const MILANO_20: Convocazione = diretto(
-  DOM_20,
-  "AZ 312 Milano Linate → Parigi Charles de Gaulle · 14:25 – 16:00",
-  [
-    `Presentati alle ore 12:00 direttamente ai banchi del check-in del volo ITA, area 1, primo piano partenze, aeroporto di Milano Linate, con ${DOC_ESPATRIO}.`,
-    conContatti(
-      "Al banco del check-in troverai le assistenti dedicate Youstina e Martina, che ti aiuteranno con le pratiche di check-in e la consegna del bagaglio.",
-      { name: "Youstina", phone: "+39 380 349 1575", note: ATTIVA_CONVOCAZIONE },
-      { name: "Martina", phone: "+39 329 229 8549", note: ATTIVA_CONVOCAZIONE }
-    ),
-  ]
-);
-
-const ROMA_20: Convocazione = diretto(
-  DOM_20,
-  "AZ 318 Roma Fiumicino → Parigi Charles de Gaulle · 11:00 – 13:15",
-  [
-    `Presentati alle ore 08:30 direttamente ai banchi del check-in del volo ITA, Terminal T1, aeroporto di Roma Fiumicino, con ${DOC_ESPATRIO}.`,
-    conContatti(
-      "Al banco del check-in troverai l'assistente dedicata Samantha, che ti aiuterà con le pratiche di check-in e la consegna del bagaglio.",
-      { name: "Samantha", phone: "+39 379 182 9181", note: ATTIVA_CONVOCAZIONE }
-    ),
-  ]
-);
-
-// Partenza del 19 da Torino: il testo dà del "voi" (è una convocazione rivolta
-// al gruppo che parte insieme), a differenza delle altre che danno del "tu".
-const TORINO_19: Convocazione = diretto(
-  SAB_19,
-  "AF 1103 Torino → Parigi Charles de Gaulle · 10:20 – 11:50",
-  [
-    `Presentatevi alle ore 08:15 direttamente ai banchi del check-in del volo, primo piano partenze, aeroporto di Torino, muniti di ${DOC_ESPATRIO}.`,
-    conContatti(
-      "Al vostro arrivo al banco del check-in troverete Giada, che vi fornirà le carte di imbarco e il fast track.",
-      { name: "Giada", phone: "+39 340 051 3990", note: ATTIVA_CONVOCAZIONE }
-    ),
-  ]
-);
-
 /** Convocazioni indicizzate per chiave scenario (come in lib/scenarios.ts). */
 export const CONVOCAZIONI: Record<string, Convocazione> = {
-  // --- Voli diretti (andata + ritorno o solo andata) ---
-  torinos: TORINO_20,
-  milanos: MILANO_20,
-  romas: ROMA_20,
-  // Solo andata: la convocazione di partenza è identica a Milano/Roma. Andranno
-  // però scorporati quando arriveranno le convocazioni del rientro, che per
-  // loro non esiste.
-  "milano-andata": MILANO_20,
-  "roma-andata": ROMA_20,
-  // Andata Torino 20 set (il rientro serale non cambia la convocazione di partenza).
-  "torino-ritorno-21:10": TORINO_20,
+  // --- Lobby 12:15 · AF 1702 per Torino ---
+  torinos: rientro("12:15", [AF_1702]),
+  "torino-19sep": rientro("12:15", [AF_1702]),
+  "torino-ritorno": rientro("12:15", [AF_1702]),
+  // Una notte in più a Parigi: stesso volo e stesso orario di pickup, ma il 24.
+  "torino-19-24sep": rientro("12:15", [AF_1702], [], GIO_24),
 
-  // --- Torino con date alternative ---
-  "torino-18sep": diretto(
-    VEN_18,
-    "AF 1103 Torino → Parigi Charles de Gaulle · 10:50 – 12:20",
-    [
-      "Presentati alle ore 08:20 direttamente ai banchi del check-in del volo, primo piano partenze, aeroporto di Torino.",
-      DOC_REMINDER,
-    ],
-    [] // il testo di origine non riporta la nota finale
+  // --- Lobby 13:15 · AZ 313 per Milano Linate ---
+  milanos: rientro("13:15", [AZ_313]),
+  "milano-ritorno": rientro("13:15", [AZ_313]),
+  // Cagliari e Olbia rientrano con lo stesso volo su Linate e proseguono in
+  // serata: per loro si aggiunge il reimbarco del bagaglio allo scalo.
+  cagliari: rientro(
+    "13:15",
+    [AZ_313, "W2 8645 Milano Linate → Cagliari · 21:30 – 22:50"],
+    [SCALO_LIN]
   ),
-  // Partenza del 19 set da Torino: convocazione alle 08:15 (non 07:50 come il
-  // 20) e carte di imbarco consegnate in aeroporto insieme al fast track.
-  "torino-19sep": TORINO_19,
-  // Andata sabato 19 set (rientro giovedì 24): stessa convocazione di partenza.
-  "torino-19-24sep": TORINO_19,
+  // Melis: l'andata era anticipata al 19, il rientro è identico a `cagliari`.
+  "cagliari-19sep": rientro(
+    "13:15",
+    [AZ_313, "W2 8645 Milano Linate → Cagliari · 21:30 – 22:50"],
+    [SCALO_LIN]
+  ),
+  "olbia-ritorno": rientro(
+    "13:15",
+    [AZ_313, "W2 8468 Milano Linate → Olbia · 21:00 – 22:10"],
+    [SCALO_LIN]
+  ),
 
-  // --- Voli di avvicinamento via Milano Linate ---
-  cagliari: {
-    dateLabel: DOM_20,
-    flights: [
-      "XZ 2354 Cagliari → Milano Linate · 08:00 – 09:20",
-      "AZ 312 Milano Linate → Parigi Charles de Gaulle · 14:25 – 16:00",
-    ],
-    call: [
-      `Sei pregato di recarti in aeroporto a Cagliari due ore prima del decollo del volo, al banco check-in del volo, con ${DOC_ESPATRIO}.`,
-      BOARDING_PASS,
-      // A Cagliari non c'è un'assistente al banco: il riferimento è Davide.
-      DAVIDE,
-      conContatti(
-        "Al tuo arrivo a Milano Linate, recupera il bagaglio e dirigiti verso l'uscita. Agli arrivi troverai Youstina, che ti accompagnerà ai banchi check-in del volo per Parigi e ti aiuterà nelle pratiche di check-in e di consegna del bagaglio.",
-        { name: "Youstina", phone: "+39 380 349 1575", note: ATTIVA_MATTINO_20 }
-      ),
-    ],
-    baggage: BAGGAGE_STD,
-    parking: true,
-  },
-  // Bretella Cagliari → Linate anticipata al 19 settembre (scenario
-  // `cagliari-19sep`): tra le due tratte c'è una notte, quindi non vale
-  // l'assistenza agli arrivi di Linate prevista dallo scenario `cagliari`.
-  // Le due giornate si susseguono complete — volo e convocazione del 19, poi
-  // volo e convocazione del 20 — perché sono due partenze distinte: il 19 da
-  // Cagliari (due ore prima, senza assistente in loco), il 20 da Linate come
-  // per `milanos`.
-  "cagliari-19sep": {
-    days: [
-      {
-        date: SAB_19,
-        flights: ["XZ 2354 Cagliari → Milano Linate · 08:00 – 09:20"],
-        call: [
-          `Sei pregato di recarti in aeroporto a Cagliari due ore prima del decollo del volo, al banco check-in del volo, con ${DOC_ESPATRIO}.`,
-          BOARDING_PASS,
-          DAVIDE,
-        ],
-      },
-      {
-        date: DOM_20,
-        flights: ["AZ 312 Milano Linate → Parigi Charles de Gaulle · 14:25 – 16:00"],
-        call: [
-          `Presentati alle ore 12:00 direttamente ai banchi del check-in del volo ITA, area 1, primo piano partenze, aeroporto di Milano Linate, con ${DOC_ESPATRIO}.`,
-          conContatti(
-            "Al banco del check-in troverai le assistenti dedicate Youstina e Martina, che ti aiuteranno con le pratiche di check-in e la consegna del bagaglio.",
-            { name: "Youstina", phone: "+39 380 349 1575", note: ATTIVA_CONVOCAZIONE },
-            { name: "Martina", phone: "+39 329 229 8549", note: ATTIVA_CONVOCAZIONE }
-          ),
-        ],
-      },
-    ],
-    baggage: BAGGAGE_STD,
-    parking: true,
-  },
+  // --- Lobby 14:45 · AZ 325 per Roma Fiumicino ---
+  romas: rientro("14:45", [AZ_325]),
+  "roma-ritorno": rientro("14:45", [AZ_325]),
+  // Bretellati: stesso volo su Fiumicino, poi la coincidenza serale.
+  palermo: viaFco("AZ 1789 Roma Fiumicino → Palermo · 21:25 – 22:30"),
+  catania: viaFco("AZ 1719 Roma Fiumicino → Catania · 21:15 – 22:30"),
+  bari: viaFco("AZ 1603 Roma Fiumicino → Bari · 21:45 – 22:55"),
+  brindisi: viaFco("AZ 1625 Roma Fiumicino → Brindisi · 21:45 – 23:00"),
+  lamezia: viaFco("AZ 1173 Roma Fiumicino → Lamezia Terme · 21:50 – 23:00"),
+  napoli: viaFco("AZ 1267 Roma Fiumicino → Napoli · 21:45 – 22:40"),
 
-  // --- Voli di avvicinamento via Roma Fiumicino ---
-  palermo: viaFco("AZ 1770 Palermo → Roma Fiumicino · 08:00 – 09:10", [
-    allOra("AZ 1770", "06:00"),
-    conContatti(
-      "Al banco del check-in troverai l'assistente dedicata Lucrezia, che ti aiuterà nelle procedure di check-in e nell'imbarco del bagaglio.",
-      { name: "Lucrezia", phone: "+39 328 569 7651", note: ATTIVA_CONVOCAZIONE }
-    ),
-  ]),
-  catania: viaFco("AZ 1736 Catania → Roma Fiumicino · 07:05 – 08:30", [
-    allOra("AZ 1736", "05:05"),
-    conContatti(
-      "Al banco del check-in troverai l'assistente dedicata Daniela Luana, che ti aiuterà nelle procedure di check-in e nell'imbarco del bagaglio.",
-      { name: "Daniela Luana", phone: "+39 333 801 5882", note: ATTIVA_CONVOCAZIONE }
-    ),
-  ]),
-  // Partenze senza assistente in aeroporto di origine: il riferimento per il
-  // primo volo è Davide, le assistenti di Fiumicino rispondono solo al transito.
-  bari: viaFco("AZ 1602 Bari → Roma Fiumicino · 06:30 – 07:40", [
-    duePrima("AZ 1602"),
-    BOARDING_PASS,
-    DAVIDE,
-  ]),
-  brindisi: viaFco("AZ 1620 Brindisi → Roma Fiumicino · 06:20 – 07:35", [
-    duePrima("AZ 1620"),
-    BOARDING_PASS,
-    DAVIDE,
-  ]),
-  lamezia: viaFco("AZ 1162 Lamezia Terme → Roma Fiumicino · 06:15 – 07:30", [
-    duePrima("AZ 1162"),
-    BOARDING_PASS,
-    DAVIDE,
-  ]),
-  napoli: viaFco("AZ 1268 Napoli → Roma Fiumicino · 06:35 – 07:25", [
-    duePrima("AZ 1268"),
-    BOARDING_PASS,
-    DAVIDE,
-  ]),
+  // --- Lobby 17:45 · AF 1502 per Torino (rientro serale) ---
+  "torino-18sep": rientro("17:45", [AF_1502]),
+  "torino-ritorno-21:10": rientro("17:45", [AF_1502]),
 
-  // --- Solo rientro (arrivo a Parigi in autonomia, nessun volo di andata) ---
-  "torino-ritorno": soloRientro(),
-  "milano-ritorno": soloRientro(),
-  "roma-ritorno": soloRientro(),
-  "olbia-ritorno": soloRientro(),
-
-  // --- Mezzi propri (posto auto riservato all'hotel) ---
-  // Nessun volo e nessun bagaglio: la clausola sul bagaglio a mano imbarcato in
-  // stiva non ha senso per chi raggiunge Parigi in auto (vedi BAGGAGE_DISCLAIMER).
-  "mezzi-propri": {
-    dateLabel: DOM_20,
-    hotel: [
-      "Ti aspettiamo presso l'Hotel Du Collectionneur a partire dalle ore 16:00.",
-      "Hotel Du Collectionneur — 51-57 Rue de Courcelles, 75008 Paris",
-      "Per te è stato previsto un posto auto riservato per la durata dell'evento.",
-      "Lo staff sarà disponibile al tuo arrivo per assistenza.",
-    ],
-  },
+  // --- Senza volo di rientro con noi ---
+  // Chi rientra per conto proprio non ha nulla da organizzare: meglio un saluto
+  // che il messaggio "la convocazione ti verrà comunicata a breve", perché per
+  // loro non arriverà mai.
+  "milano-andata": SALUTO,
+  "roma-andata": SALUTO,
+  "mezzi-propri": SALUTO,
 };
 
 // --- Convocazioni personalizzate (per singola persona) ---------------------
@@ -424,9 +244,18 @@ export const CONVOCAZIONI: Record<string, Convocazione> = {
 // per tipologia quando presente.
 
 export const PERSON_CONVOCAZIONI: Record<string, Convocazione> = {
-  // Nessun override attivo: l'unico partecipante che ne aveva uno (arrivo a
-  // Parigi in autonomia, solo volo di rientro) ha ora l'andata AF 1103 del
-  // 20 set e usa la convocazione standard di Torino.
+  // Marco Cosci: rientra con il gruppo delle 14:45 fino all'aeroporto, ma il
+  // volo se l'è prenotato per conto suo — per lui c'è il solo transfer, quindi
+  // nessun operativo da mostrare.
+  "a29917dd-65c8-41b1-b0fc-b3d94fc37bd3": {
+    dateLabel: MER_23,
+    call: [...CHECKOUT, lobby("14:45")],
+    airport: [CHECKIN],
+    baggage: BAGGAGE_STD,
+  },
+  // Renato Chichi e Anna Maria Stampi: proseguono il soggiorno a Parigi.
+  "578d2f24-bc5d-4fd0-8c19-6b7084a36e43": RESTA_A_PARIGI,
+  "4b310176-d1ec-4b7f-b85a-2ba485db12a0": RESTA_A_PARIGI,
 };
 
 // --- Risoluzione id → convocazione -----------------------------------------
@@ -442,7 +271,7 @@ export type ConvocazioneResult = {
  * Risolve il parametro del link nella convocazione corretta.
  * - Ritorna null solo se il parametro non corrisponde ad alcun partecipante/scenario.
  * - Ritorna { convocazione: null } se lo scenario esiste ma non ha (ancora) una
- *   convocazione dedicata (es. torino-17-24sep).
+ *   convocazione dedicata (es. chi non ha volo di rientro).
  */
 export function resolveConvocazione(
   param: string | null | undefined
@@ -477,12 +306,8 @@ export function convocazioneToText(conv: Convocazione): string {
   const out: string[] = [];
   out.push("SISTEMI 50 · #Parigi 20-23 settembre 2026");
   out.push("LA TUA CONVOCAZIONE");
-  if (conv.dateLabel) out.push(conv.dateLabel);
   out.push("");
 
-  if (conv.hotel?.length) {
-    out.push("RITROVO", ...conv.hotel, "");
-  }
   // I recapiti seguono la riga a cui si riferiscono, come nella card.
   const righeCall = (call: CallStep[]) =>
     call.flatMap((step) =>
@@ -495,21 +320,19 @@ export function convocazioneToText(conv: Convocazione): string {
             ),
           ]
     );
-  const sezioniVolo = (g: { flights?: string[]; call?: CallStep[] }) => {
-    if (g.flights?.length) {
-      out.push((conv.flightsLabel ?? "VOLO").toUpperCase(), ...g.flights, "");
-    }
-    if (g.call?.length) out.push("CONVOCAZIONE", ...righeCall(g.call), "");
-  };
 
-  if (conv.days?.length) {
-    // Viaggio su più giorni: ogni giornata con il suo volo e la sua convocazione.
-    for (const g of conv.days) {
-      out.push(g.date.toUpperCase(), "");
-      sezioniVolo(g);
-    }
-  } else {
-    sezioniVolo(conv);
+  if (conv.call?.length) out.push("CONVOCAZIONE", ...righeCall(conv.call), "");
+  if (conv.flights?.length) {
+    out.push((conv.flightsLabel ?? "VOLO").toUpperCase());
+    if (conv.dateLabel) out.push(conv.dateLabel);
+    out.push(...conv.flights, "");
+  }
+  if (conv.airport?.length) {
+    out.push(
+      (conv.airportLabel ?? "In aeroporto").toUpperCase(),
+      ...righeCall(conv.airport),
+      ""
+    );
   }
   if (conv.baggage?.length) {
     out.push(
@@ -518,14 +341,6 @@ export function convocazioneToText(conv: Convocazione): string {
       ""
     );
     out.push(BAGGAGE_DISCLAIMER, "");
-  }
-  if (conv.parking) {
-    out.push(
-      "PARCHEGGIO",
-      "Se desideri prenotare un posto auto a prezzi convenzionati:",
-      PARKING_URL,
-      ""
-    );
   }
   if (conv.notes?.length) {
     out.push(conv.notes.join(" "));

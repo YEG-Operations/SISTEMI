@@ -1,5 +1,5 @@
-import type { CallStep, Contact, Convocazione, Giornata } from "@/lib/convocazioni";
-import { BAGGAGE_DISCLAIMER, PARKING_URL } from "@/lib/convocazioni";
+import type { CallStep, Contact, Convocazione } from "@/lib/convocazioni";
+import { BAGGAGE_DISCLAIMER } from "@/lib/convocazioni";
 
 /** Card convocazione in stile "carta d'imbarco" brandizzata Sistemi. */
 export function ConvocazioneCard({ conv }: { conv: Convocazione }) {
@@ -13,28 +13,11 @@ export function ConvocazioneCard({ conv }: { conv: Convocazione }) {
       </div>
 
       <div className="space-y-5 px-5 py-5">
-        {conv.hotel ? (
-          <Block label="Ritrovo">
-            {/* Senza voli la data non avrebbe dove comparire (nelle altre
-                convocazioni sta sopra l'operativo): la mostriamo qui, sopra il
-                ritrovo in hotel. */}
-            {conv.dateLabel && !conv.flights && !conv.days ? (
-              <p className="mb-2 text-sm font-bold text-sistemi-red">
-                {conv.dateLabel}
-              </p>
-            ) : null}
-            {listOf(conv.hotel)}
-          </Block>
+        {/* Ordine di lettura del rientro: prima cosa fare in hotel, poi il volo
+            che spiega perché, poi cosa succede una volta in aeroporto. */}
+        {conv.call ? (
+          <Block label="Convocazione">{listOfSteps(conv.call)}</Block>
         ) : null}
-
-        {/* Viaggio su più giorni: ogni giornata completa (volo e convocazione)
-            prima di passare alla successiva, così le due partenze non si
-            mescolano. */}
-        {conv.days?.length
-          ? conv.days.map((g, i) => (
-              <Giorno key={i} giornata={g} flightsLabel={conv.flightsLabel} />
-            ))
-          : null}
 
         {conv.flights ? (
           <Block label={conv.flightsLabel ?? "Volo"}>
@@ -47,12 +30,14 @@ export function ConvocazioneCard({ conv }: { conv: Convocazione }) {
           </Block>
         ) : null}
 
-        {conv.call ? (
-          <Block label="Convocazione">{listOfSteps(conv.call)}</Block>
+        {conv.airport ? (
+          <Block label={conv.airportLabel ?? "In aeroporto"}>
+            {listOfSteps(conv.airport)}
+          </Block>
         ) : null}
 
-        {/* Franchigia e clausola obbligatoria vanno insieme: chi non vola (mezzi
-            propri) non ha né l'una né l'altra. */}
+        {/* Franchigia e clausola obbligatoria vanno insieme: chi non vola con
+            noi non ha né l'una né l'altra. */}
         {conv.baggage ? (
           <>
             <Block label={conv.baggageLabel ?? "Franchigia bagaglio"}>
@@ -73,23 +58,6 @@ export function ConvocazioneCard({ conv }: { conv: Convocazione }) {
           </>
         ) : null}
 
-        {conv.parking ? (
-          <Block label="Parcheggio">
-            <p className="text-sm leading-relaxed text-sistemi-ink">
-              Se desideri prenotare un posto auto a prezzi convenzionati,{" "}
-              <a
-                href={PARKING_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-semibold text-sistemi-red underline underline-offset-2"
-              >
-                prenota al link dedicato
-              </a>
-              .
-            </p>
-          </Block>
-        ) : null}
-
         {conv.notes && conv.notes.length ? (
           <p className="border-t border-dashed border-sistemi-ink/15 pt-4 text-sm font-bold leading-relaxed text-sistemi-ink">
             {conv.notes.join(" ")}
@@ -97,27 +65,6 @@ export function ConvocazioneCard({ conv }: { conv: Convocazione }) {
         ) : null}
       </div>
     </section>
-  );
-}
-
-/** Volo e convocazione di una singola giornata, con la data in testa. */
-function Giorno({
-  giornata,
-  flightsLabel,
-}: {
-  giornata: Giornata;
-  flightsLabel?: string;
-}) {
-  return (
-    <div className="space-y-4 border-l-2 border-sistemi-red/20 pl-4">
-      <p className="text-sm font-bold text-sistemi-red">{giornata.date}</p>
-      {giornata.flights?.length ? (
-        <Block label={flightsLabel ?? "Volo"}>{listOfFlights(giornata.flights)}</Block>
-      ) : null}
-      {giornata.call?.length ? (
-        <Block label="Convocazione">{listOfSteps(giornata.call)}</Block>
-      ) : null}
-    </div>
   );
 }
 
@@ -201,16 +148,6 @@ function Block({ label, children }: { label: string; children: React.ReactNode }
         {label}
       </span>
       <div className="flex-1">{children}</div>
-    </div>
-  );
-}
-
-function listOf(lines: string[]) {
-  return (
-    <div className="space-y-1.5 text-sm leading-relaxed text-sistemi-ink">
-      {lines.map((l, i) => (
-        <p key={i}>{l}</p>
-      ))}
     </div>
   );
 }
