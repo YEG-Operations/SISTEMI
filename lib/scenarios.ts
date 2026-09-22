@@ -510,6 +510,19 @@ export const SCENARIOS: Record<string, Scenario> = {
     legs: [ROMA.andata(DOM_20)],
   },
 
+  // --- Nessun volo a nostro carico ---
+  /**
+   * Arriva e riparte con voli prenotati per conto proprio: l'unica cosa che
+   * gestiamo noi è il transfer per l'aeroporto, che sta in convocazione.
+   * Nessuna tratta da mostrare, quindi la pagina resta al solo rimando alla
+   * convocazione.
+   */
+  "solo-transfer": {
+    title: "Il tuo viaggio",
+    subtitle: "Voli a cura del partecipante",
+    legs: [],
+  },
+
   // --- Mezzi propri ---
   "mezzi-propri": {
     title: "Viaggio con mezzi propri",

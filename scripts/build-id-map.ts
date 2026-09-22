@@ -53,6 +53,10 @@ const OVERRIDES: Record<string, string> = {
   // Aggiunta l'andata AF 1103 del 20 set: da solo rientro su Torino a viaggio
   // completo, quindi `torinos`.
   "149556d2-c809-4470-b39e-e396c5178bd3": "torinos",
+  // Marco Cosci: il rientro su Roma non è più a nostro carico, se l'è prenotato
+  // da sé. Resta il solo transfer per l'aeroporto (vedi convocazione), quindi
+  // niente tratte da mostrare: da `roma-ritorno` a `solo-transfer`.
+  "a29917dd-65c8-41b1-b0fc-b3d94fc37bd3": "solo-transfer",
 };
 
 /**
