@@ -219,7 +219,20 @@ export const SCENARIOS: Record<string, Scenario> = {
   "torino-19-24sep": {
     title: "Il tuo viaggio · Torino",
     subtitle: "Andata sabato 19 settembre, ritorno giovedì 24",
-    legs: [TORINO.andata(SAB_19), TORINO.ritorno(GIO_24)],
+    legs: [
+      TORINO.andata(SAB_19),
+      // Il 24 la tratta CDG → Torino delle 15:40 è operata dall'AF 1102, non
+      // dall'AF 1702 degli altri giorni: stesso orario, numero di volo diverso.
+      leg(
+        "Ritorno",
+        GIO_24,
+        "AF 1102 Paris Charles de Gaulle → Torino",
+        "Paris Charles de Gaulle (CDG)",
+        "Torino (TRN)",
+        "15:40",
+        "17:05"
+      ),
+    ],
   },
   "torino-17-24sep": {
     title: "Il tuo viaggio · Torino",

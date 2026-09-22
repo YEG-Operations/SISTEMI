@@ -145,6 +145,8 @@ const SCALO_LIN: CallStep = {
 // --- Operativi di rientro (allineati a lib/scenarios.ts) -------------------
 
 const AF_1702 = "AF 1702 Parigi Charles de Gaulle → Torino · 15:40 – 17:05";
+/** Stessa tratta e stesso orario dell'AF 1702, ma il 24 il volo è l'AF 1102. */
+const AF_1102 = "AF 1102 Parigi Charles de Gaulle → Torino · 15:40 – 17:05";
 const AZ_313 = "AZ 313 Parigi Charles de Gaulle → Milano Linate · 16:50 – 18:20";
 const AZ_325 = "AZ 325 Parigi Charles de Gaulle → Roma Fiumicino · 18:15 – 20:25";
 const AF_1502 = "AF 1502 Parigi Charles de Gaulle → Torino · 21:10 – 22:35";
@@ -190,8 +192,9 @@ export const CONVOCAZIONI: Record<string, Convocazione> = {
   torinos: rientro("12:15", [AF_1702]),
   "torino-19sep": rientro("12:15", [AF_1702]),
   "torino-ritorno": rientro("12:15", [AF_1702]),
-  // Una notte in più a Parigi: stesso volo e stesso orario di pickup, ma il 24.
-  "torino-19-24sep": rientro("12:15", [AF_1702], [], GIO_24),
+  // Una notte in più a Parigi: stesso orario di pickup, ma il 24 — e il volo
+  // delle 15:40 quel giorno è l'AF 1102, non l'AF 1702.
+  "torino-19-24sep": rientro("12:15", [AF_1102], [], GIO_24),
 
   // --- Lobby 13:15 · AZ 313 per Milano Linate ---
   milanos: rientro("13:15", [AZ_313]),
