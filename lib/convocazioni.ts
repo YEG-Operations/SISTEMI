@@ -193,8 +193,12 @@ export const CONVOCAZIONI: Record<string, Convocazione> = {
   "torino-19sep": rientro("12:15", [AF_1702]),
   "torino-ritorno": rientro("12:15", [AF_1702]),
   // Una notte in più a Parigi: stesso orario di pickup, ma il 24 — e il volo
-  // delle 15:40 quel giorno è l'AF 1102, non l'AF 1702.
-  "torino-19-24sep": rientro("12:15", [AF_1102], [], GIO_24),
+  // delle 15:40 quel giorno è l'AF 1102, non l'AF 1702. Senza la riga sul
+  // check-in ai banchi: per loro non vale.
+  "torino-19-24sep": {
+    ...rientro("12:15", [AF_1102], [], GIO_24),
+    airport: undefined,
+  },
 
   // --- Lobby 13:15 · AZ 313 per Milano Linate ---
   milanos: rientro("13:15", [AZ_313]),
@@ -248,13 +252,11 @@ export const CONVOCAZIONI: Record<string, Convocazione> = {
 
 export const PERSON_CONVOCAZIONI: Record<string, Convocazione> = {
   // Marco Cosci: rientra con il gruppo delle 14:45 fino all'aeroporto, ma il
-  // volo se l'è prenotato per conto suo — per lui c'è il solo transfer, quindi
-  // nessun operativo da mostrare.
+  // volo se l'è prenotato per conto suo. Niente operativo, niente check-in e
+  // niente franchigia: sono tutte cose che dipendono dal biglietto, e il suo
+  // non lo abbiamo emesso noi. Resta il solo transfer.
   "a29917dd-65c8-41b1-b0fc-b3d94fc37bd3": {
-    dateLabel: MER_23,
     call: [...CHECKOUT, lobby("14:45")],
-    airport: [CHECKIN],
-    baggage: BAGGAGE_STD,
   },
   // Renato Chichi e Anna Maria Stampi: proseguono il soggiorno a Parigi.
   "578d2f24-bc5d-4fd0-8c19-6b7084a36e43": RESTA_A_PARIGI,
